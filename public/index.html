@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StorkLeague — Display</title>
+  <link rel="stylesheet" href="/css/display.css?v=6">
+</head>
+<body>
+
+<div class="bg"></div>
+
+<!-- ── PRE-MATCH SCREEN ──────────────────────────────────────── -->
+<div id="preMatchScreen">
+  <div class="pre-top-logo">
+    <img src="/logo.png" alt="StorkLeague">
+    <span>STORK LEAGUE</span>
+  </div>
+  <div class="pre-match-content">
+    <div class="pre-team team-a">
+      <div id="preLogoA" class="pre-team-logo-wrap"></div>
+      <div id="preNameA" class="pre-team-name-pre">SQUADRA A</div>
+    </div>
+    <div class="pre-vs">VS</div>
+    <div class="pre-team team-b">
+      <div id="preLogoB" class="pre-team-logo-wrap"></div>
+      <div id="preNameB" class="pre-team-name-pre">SQUADRA B</div>
+    </div>
+  </div>
+  <div class="pre-subtitle">In attesa dell'arbitro…</div>
+</div>
+
+<!-- ── MAIN DISPLAY ──────────────────────────────────────────── -->
+<div class="display-root" id="displayRoot">
+
+  <!-- HEADER -->
+  <header class="display-header">
+    <div class="hd-logo">
+      <img src="/logo.png" alt="StorkLeague">
+      <span>STORK LEAGUE</span>
+    </div>
+    <div class="hd-phase">
+      <div class="hd-phase-badge" id="phaseBadge">PRE PARTITA</div>
+      <div class="hd-phase-sub"   id="phaseSub"></div>
+    </div>
+    <div class="hd-right">
+      <button class="sound-btn active" id="soundToggleBtn">🔊</button>
+    </div>
+  </header>
+
+  <!-- MAIN: 5 colonne -->
+  <main class="display-main no-card-a no-card-b">
+
+    <!-- COL 1: Pannello carta attiva team A -->
+    <div class="carta-attiva-panel panel-hidden" id="cardPanelA"></div>
+
+    <!-- COL 2: Team A (logo + nome + cartellini) -->
+    <div class="team-section team-a-section">
+      <div class="team-logo-wrap" id="teamLogoWrapA">
+        <img id="teamLogoA" class="team-logo-img" src="" alt="" style="display:none">
+        <div id="teamLogoAPlaceholder" class="team-logo-placeholder"></div>
+      </div>
+      <div class="team-name-display" id="teamAName">SQUADRA A</div>
+      <div class="discipline-cards-list" id="disciplineA"></div>
+    </div>
+
+    <!-- COL 3: Score + Timer -->
+    <div class="score-center">
+      <div class="golx2-badge" id="golx2Badge">⚡ GOL × 2 ⚡</div>
+      <div class="score-row">
+        <span class="score-number" id="scoreA">0</span>
+        <span class="score-sep">—</span>
+        <span class="score-number" id="scoreB">0</span>
+      </div>
+      <div class="timer-display" id="timerDisplay">00:00</div>
+      <div class="timer-label">MATCH TIMER</div>
+    </div>
+
+    <!-- COL 4: Team B (logo + nome + cartellini) -->
+    <div class="team-section team-b-section">
+      <div class="team-logo-wrap" id="teamLogoWrapB">
+        <img id="teamLogoB" class="team-logo-img" src="" alt="" style="display:none">
+        <div id="teamLogoBPlaceholder" class="team-logo-placeholder"></div>
+      </div>
+      <div class="team-name-display" id="teamBName">SQUADRA B</div>
+      <div class="discipline-cards-list" id="disciplineB"></div>
+    </div>
+
+    <!-- COL 5: Pannello carta attiva team B -->
+    <div class="carta-attiva-panel panel-hidden" id="cardPanelB"></div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="display-footer">
+    <div class="footer-line"></div>
+    <div class="footer-brand">
+      <img src="/logo.png" alt="" class="footer-logo-img">
+      <span>STORK LEAGUE</span>
+    </div>
+    <div class="footer-line"></div>
+  </footer>
+
+</div>
+
+<!-- ── OVERLAYS ──────────────────────────────────────────────── -->
+<div class="overlay-base" id="phaseTransitionOverlay"></div>
+<div class="overlay-base" id="transitionVideoOverlay" style="z-index:500;background:#000;">
+  <video id="transitionVideo" playsinline webkit-playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+</div>
+<div class="overlay-base" id="cardAnimOverlay"></div>
+<div class="overlay-base" id="disciplineOverlay"></div>
+<div class="overlay-base" id="goalOverlay"></div>
+<div class="overlay-base" id="videoOverlay">
+  <video id="goalVideo" playsinline webkit-playsinline></video>
+</div>
+<div class="overlay-base" id="alertOverlay"></div>
+<div class="overlay-base" id="phaseEndOverlay"></div>
+<div class="overlay-base" id="victoryOverlay"></div>
+<div class="overlay-base" id="rigorePresOverlay"></div>
+
+<!-- ── SCRIPTS ───────────────────────────────────────────────── -->
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/shared.js?v=5"></script>
+<script src="/js/display.js?v=6"></script>
+
+</body>
+</html>

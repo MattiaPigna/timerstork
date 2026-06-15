@@ -1,0 +1,562 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --orange: #FF6B00;
+  --orange2: #FF8A30;
+  --black: #080808;
+  --dark: #111;
+  --dark2: #181818;
+  --dark3: #222;
+  --dark4: #2C2C2C;
+  --white: #fff;
+  --gray: #888;
+  --gray2: #555;
+  --yellow-card: #FFD700;
+  --red-card: #E51B1B;
+  --green: #00C56E;
+  --danger: #ff4444;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html { font-size: 16px; }
+
+body {
+  background: var(--dark);
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  padding-bottom: 80px;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ─────────────────────────────────────────── */
+.admin-header {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--black);
+  border-bottom: 2px solid var(--orange);
+  gap: 12px;
+}
+.admin-logo { height: 32px; }
+.admin-header-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: .15em; color: var(--orange);
+  flex: 1; text-align: center;
+}
+.display-link-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 6px;
+  background: var(--dark3); color: var(--white);
+  font-size: 12px; font-weight: 600;
+  text-decoration: none; border: 1px solid var(--dark4);
+  white-space: nowrap;
+}
+
+/* ── CONNECTION STATUS ───────────────────────────────── */
+.conn-status {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  font-size: 11px; font-weight: 600; letter-spacing: .05em;
+  text-align: center; justify-content: center;
+}
+.conn-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--gray2);
+  transition: background .3s;
+}
+.conn-dot.connected { background: var(--green); box-shadow: 0 0 6px var(--green); }
+
+/* ── SECTIONS ────────────────────────────────────────── */
+.admin-section {
+  background: var(--dark2);
+  border-radius: 12px;
+  margin: 10px 12px;
+  overflow: hidden;
+}
+.section-title {
+  padding: 10px 16px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .2em; text-transform: uppercase;
+  color: var(--orange);
+  background: rgba(255,107,0,.08);
+  border-bottom: 1px solid rgba(255,107,0,.15);
+}
+.section-body { padding: 12px; }
+
+/* ── PHASE BUTTONS ───────────────────────────────────── */
+.phase-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.phase-btn {
+  padding: 10px 6px;
+  border-radius: 8px;
+  border: 2px solid var(--dark4);
+  background: var(--dark3);
+  color: var(--gray);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px; font-weight: 700;
+  letter-spacing: .05em;
+  cursor: pointer;
+  text-align: center;
+  transition: all .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.phase-btn:hover, .phase-btn:active { background: var(--dark4); }
+.phase-btn.active {
+  background: var(--orange);
+  border-color: var(--orange2);
+  color: var(--black);
+  box-shadow: 0 0 15px rgba(255,107,0,.4);
+}
+
+/* ── TIMER ───────────────────────────────────────────── */
+.timer-admin-display {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px; letter-spacing: .08em;
+  color: var(--orange);
+  text-align: center;
+  text-shadow: 0 0 15px rgba(255,107,0,.4);
+  padding: 8px 0;
+  line-height: 1;
+}
+.timer-admin-display.running { animation: timerPulse 1s ease-in-out infinite; }
+.timer-controls {
+  display: flex; gap: 10px; justify-content: center;
+  padding: 0 12px 12px;
+}
+.timer-btn {
+  flex: 1;
+  padding: 14px 8px;
+  border-radius: 10px;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.timer-btn.play  { background: var(--green); color: var(--black); }
+.timer-btn.pause { background: var(--yellow-card); color: var(--black); }
+.timer-btn.reset { background: var(--dark4); color: var(--white); }
+.timer-btn:active { transform: scale(.94); }
+
+.timer-edit {
+  display: flex; gap: 8px; align-items: center;
+  padding: 0 12px 12px;
+}
+.timer-edit label { font-size: 12px; color: var(--gray); white-space: nowrap; }
+.timer-edit input {
+  flex: 1; padding: 8px 10px;
+  background: var(--dark3); border: 1px solid var(--dark4);
+  border-radius: 6px; color: var(--white);
+  font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+  letter-spacing: .05em; text-align: center;
+}
+.timer-set-btn {
+  padding: 8px 14px; border-radius: 6px;
+  background: var(--dark4); border: 1px solid var(--gray2);
+  color: var(--white); font-size: 13px; font-weight: 600;
+  cursor: pointer;
+}
+.timer-set-btn:active { background: var(--dark3); }
+
+/* ── SCORE / GOALS ───────────────────────────────────── */
+.goals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.team-goal-box {
+  background: var(--dark3);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+  border: 1px solid var(--dark4);
+}
+.team-goal-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px; font-weight: 700;
+  letter-spacing: .1em; color: var(--orange2);
+  text-align: center;
+  max-width: 100%; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.team-goal-score {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 52px; color: var(--white);
+  line-height: 1;
+}
+.goal-btns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px; width: 100%;
+}
+.goal-btn {
+  padding: 10px 0;
+  border-radius: 8px; border: none;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+}
+.goal-btn:active { transform: scale(.92); }
+.goal-btn.minus { background: var(--danger); color: var(--white); }
+.goal-btn.plus1 { background: var(--green);  color: var(--black); }
+.goal-btn.plus2 { background: var(--orange); color: var(--black); }
+
+/* ── SPECIAL CARDS ───────────────────────────────────── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.card-play-item {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  background: var(--dark3);
+  border: 1px solid var(--dark4);
+  border-radius: 10px;
+  padding: 8px 4px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.card-play-item:active { transform: scale(.94); background: var(--dark4); }
+.card-play-img {
+  height: 70px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.6));
+}
+.card-play-name {
+  font-size: 9px; font-weight: 700;
+  letter-spacing: .05em; text-align: center;
+  color: var(--orange2);
+  text-transform: uppercase;
+}
+.card-play-dur {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px; color: var(--gray);
+}
+
+/* Card team selector modal */
+.card-team-modal {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.85);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.card-team-modal.open { opacity: 1; pointer-events: all; }
+.card-team-panel {
+  background: var(--dark2);
+  border: 2px solid var(--orange);
+  border-radius: 14px;
+  padding: 20px;
+  width: 90vw; max-width: 360px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.card-team-panel h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px; letter-spacing: .15em;
+  color: var(--orange); text-align: center;
+}
+.card-team-panel h4 { font-size: 13px; color: var(--gray); text-align: center; }
+.modal-team-btns {
+  display: flex; gap: 10px;
+}
+.modal-team-btn {
+  flex: 1; padding: 14px 10px;
+  border-radius: 10px; border: 2px solid var(--dark4);
+  background: var(--dark3); color: var(--white);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px; font-weight: 700; letter-spacing: .05em;
+  cursor: pointer; text-align: center;
+}
+.modal-team-btn:active { transform: scale(.94); background: var(--orange); color: var(--black); border-color: var(--orange); }
+.modal-noTeam-btn {
+  padding: 10px; border-radius: 8px; border: 1px solid var(--dark4);
+  background: var(--dark3); color: var(--gray);
+  font-size: 13px; cursor: pointer; text-align: center;
+}
+.modal-cancel { color: var(--danger); background: none; border: none; font-size: 13px; cursor: pointer; text-align: center; }
+
+/* ── DISCIPLINE CARDS ─────────────────────────────────── */
+.disc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.disc-section-label {
+  grid-column: span 2;
+  font-size: 11px; color: var(--gray);
+  letter-spacing: .1em; text-transform: uppercase;
+  text-align: center; padding-top: 4px;
+}
+.disc-btn {
+  padding: 12px 8px;
+  border-radius: 10px; border: none;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px; font-weight: 700; letter-spacing: .05em;
+  cursor: pointer; transition: all .15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.disc-btn:active { transform: scale(.93); }
+.disc-btn.yellow { background: var(--yellow-card); color: #000; }
+.disc-btn.red    { background: var(--red-card);    color: #fff; }
+
+/* Player selector for discipline */
+.player-select-wrap {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-top: 4px;
+}
+.player-select-wrap label { font-size: 11px; color: var(--gray); letter-spacing: .05em; }
+.player-select {
+  width: 100%; padding: 8px 10px;
+  background: var(--dark3); border: 1px solid var(--dark4);
+  border-radius: 6px; color: var(--white);
+  font-size: 14px;
+}
+
+/* ── ACTIVE CARDS LIST ────────────────────────────────── */
+.active-list { display: flex; flex-direction: column; gap: 6px; }
+.active-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--dark3); border-radius: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--dark4);
+}
+.active-item img {
+  height: 36px; object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.6));
+}
+.active-item-info { flex: 1; }
+.active-item-name { font-size: 13px; font-weight: 600; }
+.active-item-time {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px; color: var(--orange);
+}
+.active-item-remove {
+  background: var(--dark4); border: none;
+  color: var(--danger); font-size: 18px;
+  width: 32px; height: 32px; border-radius: 6px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.active-item.discipline .disc-color {
+  width: 28px; height: 40px; border-radius: 4px;
+  flex-shrink: 0;
+}
+.disc-color.yellow { background: var(--yellow-card); }
+.disc-color.red    { background: var(--red-card); }
+.empty-state {
+  text-align: center; color: var(--gray2);
+  font-size: 12px; padding: 12px;
+  letter-spacing: .1em; text-transform: uppercase;
+}
+
+/* ── SETTINGS SECTION ─────────────────────────────────── */
+.settings-grid {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.settings-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.settings-row label {
+  flex: 1; font-size: 13px; color: var(--gray2);
+}
+.settings-row input {
+  width: 70px; padding: 6px 10px;
+  background: var(--dark3); border: 1px solid var(--dark4);
+  border-radius: 6px; color: var(--white);
+  font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+  text-align: center;
+}
+.settings-row span { font-size: 12px; color: var(--gray2); }
+
+.settings-save-btn {
+  width: 100%; padding: 12px;
+  border-radius: 8px; border: none;
+  background: var(--orange); color: var(--black);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px; font-weight: 700;
+  cursor: pointer; margin-top: 4px;
+}
+.settings-save-btn:active { background: var(--orange2); }
+
+/* ── TEAM MANAGEMENT ──────────────────────────────────── */
+.team-mgmt-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.team-mgmt-box {
+  background: var(--dark3); border-radius: 10px;
+  padding: 12px; border: 1px solid var(--dark4);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.team-mgmt-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px; font-weight: 700;
+  letter-spacing: .1em; color: var(--orange2);
+  text-align: center;
+}
+.mgmt-input {
+  width: 100%; padding: 7px 10px;
+  background: var(--dark2); border: 1px solid var(--dark4);
+  border-radius: 6px; color: var(--white);
+  font-size: 14px;
+}
+.mgmt-upload-btn {
+  width: 100%; padding: 8px;
+  border-radius: 6px; border: 1px dashed var(--dark4);
+  background: var(--dark2); color: var(--gray);
+  font-size: 12px; cursor: pointer; text-align: center;
+}
+.mgmt-logo-preview {
+  height: 50px; display: flex; align-items: center; justify-content: center;
+}
+.mgmt-logo-preview img { max-height: 46px; object-fit: contain; }
+
+.json-upload-area {
+  display: flex; gap: 8px; flex-direction: column;
+}
+.json-upload-label {
+  font-size: 12px; color: var(--gray); letter-spacing: .05em;
+}
+.json-upload-btn {
+  padding: 10px; border-radius: 8px;
+  border: 1px dashed var(--orange);
+  background: rgba(255,107,0,.05);
+  color: var(--orange2); font-size: 13px;
+  cursor: pointer; text-align: center;
+}
+.json-upload-btn:active { background: rgba(255,107,0,.1); }
+
+.video-upload-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.video-upload-box {
+  background: var(--dark3); border-radius: 8px; padding: 10px;
+  border: 1px solid var(--dark4); display: flex; flex-direction: column; gap: 6px;
+}
+.video-upload-box label { font-size: 12px; color: var(--gray); letter-spacing: .05em; }
+.video-upload-btn {
+  padding: 8px; border-radius: 6px;
+  border: 1px dashed var(--dark4);
+  background: var(--dark2); color: var(--gray2);
+  font-size: 11px; cursor: pointer; text-align: center;
+}
+.video-status { font-size: 11px; color: var(--green); word-break: break-all; }
+
+/* ── PLAYERS ──────────────────────────────────────────── */
+.players-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.players-col { display: flex; flex-direction: column; gap: 6px; }
+.players-col-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px; font-weight: 700;
+  letter-spacing: .1em; color: var(--orange2);
+}
+.player-add-row {
+  display: flex; gap: 6px;
+}
+.player-add-row input {
+  flex: 1; padding: 7px 8px;
+  background: var(--dark3); border: 1px solid var(--dark4);
+  border-radius: 6px; color: var(--white); font-size: 13px;
+}
+.player-add-btn {
+  padding: 7px 12px; border-radius: 6px; border: none;
+  background: var(--orange); color: var(--black);
+  font-weight: 700; font-size: 16px; cursor: pointer;
+}
+.player-list { display: flex; flex-direction: column; gap: 4px; }
+.player-item {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--dark3); border-radius: 6px; padding: 6px 8px;
+  font-size: 12px;
+}
+.player-item span { flex: 1; }
+.player-del { background: none; border: none; color: var(--danger); font-size: 14px; cursor: pointer; }
+
+/* ── RESET ────────────────────────────────────────────── */
+.reset-section { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.reset-btn {
+  width: 100%; padding: 12px;
+  border-radius: 8px; border: 2px solid var(--danger);
+  background: transparent; color: var(--danger);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px; font-weight: 700; letter-spacing: .1em;
+  cursor: pointer;
+}
+.reset-btn:active { background: rgba(255,68,68,.1); }
+
+/* ── ANIMATIONS ───────────────────────────────────────── */
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .7; }
+}
+
+/* ── PRESET SQUADRE ───────────────────────────────────── */
+.preset-selector-row {
+  display: flex; gap: 8px; align-items: center;
+}
+.preset-del-btn {
+  padding: 8px 12px; border-radius: 8px;
+  background: rgba(255,68,68,.12); border: 1px solid rgba(255,68,68,.3);
+  color: var(--danger); font-size: 16px; font-weight: 700;
+  cursor: pointer; flex-shrink: 0;
+}
+.preset-del-btn:active { background: rgba(255,68,68,.25); }
+.preset-load-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;
+}
+.preset-load-btn {
+  padding: 12px 6px; border-radius: 10px;
+  border: 2px solid var(--orange);
+  background: rgba(255,107,0,.08); color: var(--orange);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px; font-weight: 700; letter-spacing: .04em;
+  cursor: pointer; text-align: center;
+  transition: all .15s;
+}
+.preset-load-btn:active { background: rgba(255,107,0,.2); transform: scale(.95); }
+.preset-save-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  margin-top: 6px; padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,.05);
+}
+.preset-save-btn-sm {
+  padding: 10px 6px; border-radius: 8px; border: none;
+  background: var(--dark3); color: var(--gray);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+  border: 1px solid var(--dark4);
+}
+.preset-save-btn-sm:active { background: var(--dark4); color: var(--white); transform: scale(.95); }
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+
+/* Cards: 4 per row on wider phones, 3 on narrower */
+@media (min-width: 420px) {
+  .cards-grid { grid-template-columns: repeat(4, 1fr); }
+  .card-play-img { height: 80px; }
+  .card-play-name { font-size: 10px; }
+}
+/* Very small screens: stack some 2-col grids */
+@media (max-width: 340px) {
+  .goals-grid        { grid-template-columns: 1fr; }
+  .team-mgmt-grid    { grid-template-columns: 1fr; }
+  .video-upload-grid { grid-template-columns: 1fr; }
+  .players-grid      { grid-template-columns: 1fr; }
+  .preset-load-row   { grid-template-columns: 1fr; }
+  .preset-save-row   { grid-template-columns: 1fr; }
+  .phase-buttons     { grid-template-columns: repeat(2, 1fr); }
+  .modal-team-btns   { flex-direction: column; }
+}
+
+/* ── SCROLLBAR ────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--dark); }
+::-webkit-scrollbar-thumb { background: var(--dark4); border-radius: 2px; }

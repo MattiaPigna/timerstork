@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>StorkLeague — Admin</title>
+  <link rel="stylesheet" href="/css/admin.css">
+  <style>
+    /* Media upload rows (transition videos, sounds) */
+    .media-upload-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid #1a1a1a;
+    }
+    .media-upload-row:last-child { border-bottom: none; }
+    .media-label { flex: 1; font-size: 13px; font-weight: 600; color: #ccc; }
+    .media-upload-btn {
+      background: rgba(255,107,0,.12); border: 1px solid rgba(255,107,0,.35);
+      color: var(--orange); border-radius: 8px; padding: 8px 14px;
+      font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
+      transition: all .15s;
+    }
+    .media-upload-btn:active { background: rgba(255,107,0,.25); }
+    .media-remove-btn {
+      background: rgba(200,0,0,.12); border: 1px solid rgba(200,0,0,.35);
+      color: #ff5555; border-radius: 6px; padding: 6px 10px;
+      font-size: 13px; cursor: pointer;
+    }
+    .media-status { font-size: 16px; min-width: 20px; text-align: center; color: #444; }
+    .media-status.has-media { color: var(--green); }
+
+    /* Rigore Presidenziale button */
+    .rigore-section-btn {
+      width: 100%; padding: 16px 12px;
+      border-radius: 12px; border: 3px solid var(--orange);
+      background: rgba(255,107,0,.08);
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      cursor: pointer; transition: all .2s;
+    }
+    .rigore-section-btn:active { background: rgba(255,107,0,.2); transform: scale(.97); }
+    .rigore-section-btn img { height: 64px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,.6)); }
+    .rigore-section-btn span {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 20px; font-weight: 900; letter-spacing: .08em;
+      color: var(--orange); line-height: 1.2; text-align: left;
+    }
+
+    /* Tick verde sul pulsante carta */
+    .card-play-item { position: relative; }
+    .card-played-tick {
+      position: absolute; top: 4px; right: 4px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--green); color: #000;
+      font-size: 12px; font-weight: 900;
+      display: none; align-items: center; justify-content: center;
+      z-index: 5;
+    }
+    .card-play-item.played { border-color: var(--green); background: rgba(0,197,110,.08); }
+    .card-play-item.played .card-played-tick { display: flex; }
+
+    /* ── PLAYER VIDEO BUTTON ────────────────────────────── */
+    .player-name-text { flex: 1; font-size: 13px; }
+    .player-vid-btn {
+      padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 14px;
+      background: rgba(255,255,255,.05); border: 1px solid #333;
+      transition: all .15s;
+    }
+    .player-vid-btn.has-vid { border-color: var(--green); background: rgba(0,197,110,.12); }
+    .player-vid-btn:active { background: rgba(255,107,0,.2); }
+
+    /* ── SETTINGS DRAWER ─────────────────────────────────── */
+    .settings-drawer-btn {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; margin: 8px 0 4px;
+      padding: 16px 18px;
+      background: linear-gradient(135deg, rgba(255,107,0,.15), rgba(255,107,0,.08));
+      border: 2px solid rgba(255,107,0,.5);
+      border-radius: 14px;
+      color: var(--orange);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px; font-weight: 900; letter-spacing: .06em;
+      cursor: pointer; transition: all .2s;
+    }
+    .settings-drawer-btn:active { background: rgba(255,107,0,.25); transform: scale(.98); }
+    .drawer-arrow { font-size: 14px; transition: transform .3s ease; }
+    .drawer-arrow.open { transform: rotate(180deg); }
+
+    .settings-drawer {
+      max-height: 0; overflow: hidden;
+      transition: max-height .4s cubic-bezier(.4,0,.2,1);
+    }
+    .settings-drawer.open { max-height: 9999px; }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────── -->
+<header class="admin-header">
+  <img src="/logo.png" class="admin-logo" alt="Logo">
+  <span class="admin-header-title">⚽ ADMIN</span>
+  <a href="/" target="_blank" class="display-link-btn">📺 Display</a>
+</header>
+
+<div class="conn-status">
+  <div class="conn-dot" id="connDot"></div>
+  <span id="connText">Connessione…</span>
+</div>
+
+<!-- ── FASE ──────────────────────────────────────────────── -->
+<div class="admin-section">
+  <div class="section-title">FASE DI GIOCO</div>
+  <div class="section-body">
+    <div class="phase-buttons">
+      <button class="phase-btn" data-phase="pre"         onclick="setPhase('pre')">PRE</button>
+      <button class="phase-btn" data-phase="1tempo"      onclick="setPhase('1tempo')">1° TEMPO</button>
+      <button class="phase-btn" data-phase="momentodado" onclick="setPhase('momentodado')">M. DADO</button>
+      <button class="phase-btn" data-phase="2tempo"      onclick="setPhase('2tempo')">2° TEMPO</button>
+      <button class="phase-btn" data-phase="golx2"       onclick="setPhase('golx2')">GOL x2</button>
+      <button class="phase-btn" data-phase="post"        onclick="setPhase('post')">FINE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TIMER ─────────────────────────────────────────────── -->
+<div class="admin-section">
+  <div class="section-title">TIMER</div>
+  <div class="timer-admin-display" id="adminTimerDisplay">00:00</div>
+  <div class="timer-controls">
+    <button class="timer-btn play"  id="btnPlay"  onclick="timerStart()">▶</button>
+    <button class="timer-btn pause" id="btnPause" onclick="timerPause()" style="display:none">⏸</button>
+    <button class="timer-btn reset"               onclick="timerReset()">↺</button>
+  </div>
+  <div class="timer-edit">
+    <label>Imposta:</label>
+    <input type="text" id="timerSetInput" placeholder="MM:SS" maxlength="5">
+    <button class="timer-set-btn" onclick="timerSetValue()">OK</button>
+  </div>
+</div>
+
+<!-- ── GOL ───────────────────────────────────────────────── -->
+<div class="admin-section">
+  <div class="section-title">GOL</div>
+  <div class="section-body">
+    <div class="goals-grid">
+      <div class="team-goal-box">
+        <div class="team-goal-name" id="goalNameA">Squadra A</div>
+        <div class="team-goal-score" id="scoreA">0</div>
+        <div class="goal-btns">
+          <button class="goal-btn minus" onclick="addGoal('a',-1)">−1</button>
+          <button class="goal-btn plus1" onclick="addGoal('a', 1)">+1</button>
+          <button class="goal-btn plus2" onclick="addGoal('a', 2)">+2</button>
+        </div>
+      </div>
+      <div class="team-goal-box">
+        <div class="team-goal-name" id="goalNameB">Squadra B</div>
+        <div class="team-goal-score" id="scoreB">0</div>
+        <div class="goal-btns">
+          <button class="goal-btn minus" onclick="addGoal('b',-1)">−1</button>
+          <button class="goal-btn plus1" onclick="addGoal('b', 1)">+1</button>
+          <button class="goal-btn plus2" onclick="addGoal('b', 2)">+2</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── RIGORE PRESIDENZIALE ───────────────────────────────── -->
+<div class="admin-section">
+  <div class="section-title">⚽ RIGORE PRESIDENZIALE</div>
+  <div class="section-body">
+    <button class="rigore-section-btn" onclick="playRigorePres()">
+      <img src="/carte/rigore%20presidenziale(4)_senza_sfondo.png" alt="Rigore">
+      <span>RIGORE<br>PRESIDENZIALE</span>
+    </button>
+  </div>
+</div>
+
+<!-- ── CARTE SPECIALI ─────────────────────────────────────── -->
+<div class="admin-section">
+  <div class="section-title">CARTE SPECIALI</div>
+  <div class="section-body">
+    <div class="cards-grid" id="cardsGrid"></div>
+  </div>
+</div>
+
+<!-- ── CARTELLINI ─────────────────────────────────────────── -->
+<div class="admin-section">
+  <div class="section-title">CARTELLINI</div>
+  <div class="section-body" style="display:flex;flex-direction:column;gap:14px;">
+
+    <div>
+      <div class="section-title" style="border-radius:6px;margin-bottom:8px;font-size:10px;">SQUADRA A</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;">
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;color:#888;">Giocatore</label>
+          <select class="player-select" id="playerSelAyellow"></select>
+          <button class="disc-btn yellow" onclick="playDiscipline('a','yellow')">🟡 GIALLO</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;color:#888;">Giocatore</label>
+          <select class="player-select" id="playerSelAred"></select>
+          <button class="disc-btn red" onclick="playDiscipline('a','red')">🔴 ROSSO</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title" style="border-radius:6px;margin-bottom:8px;font-size:10px;">SQUADRA B</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;">
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;color:#888;">Giocatore</label>
+          <select class="player-select" id="playerSelByellow"></select>
+          <button class="disc-btn yellow" onclick="playDiscipline('b','yellow')">🟡 GIALLO</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;color:#888;">Giocatore</label>
+          <select class="player-select" id="playerSelBred"></select>
+          <button class="disc-btn red" onclick="playDiscipline('b','red')">🔴 ROSSO</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── ATTIVI ─────────────────────────────────────────────── -->
+<div class="admin-section">
+  <div class="section-title">ATTIVI (carte + cartellini)</div>
+  <div class="section-body">
+    <div class="active-list" id="activeList">
+      <div class="empty-state">Nessun elemento attivo</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TASTO IMPOSTAZIONI ─────────────────────────────────── -->
+<button class="settings-drawer-btn" onclick="toggleSettingsDrawer()">
+  ⚙️ IMPOSTAZIONI &amp; SQUADRE
+  <span class="drawer-arrow" id="drawerArrow">▼</span>
+</button>
+
+<!-- ── DRAWER IMPOSTAZIONI ───────────────────────────────── -->
+<div class="settings-drawer" id="settingsDrawer">
+
+  <!-- SQUADRE SALVATE -->
+  <div class="admin-section">
+    <div class="section-title">📋 SQUADRE SALVATE</div>
+    <div class="section-body" id="presetsSection">
+      <div class="preset-selector-row">
+        <select class="player-select" id="presetSelector" style="flex:1;">
+          <option value="">— Seleziona preset —</option>
+        </select>
+        <button class="preset-del-btn" onclick="deleteSelectedPreset()" title="Elimina">✕</button>
+      </div>
+      <div class="preset-load-row">
+        <button class="preset-load-btn" onclick="loadPreset('a')">⬇ Carica in A</button>
+        <button class="preset-load-btn" onclick="loadPreset('b')">⬇ Carica in B</button>
+      </div>
+      <div class="preset-save-row">
+        <button class="preset-save-btn-sm" onclick="savePreset('a')">💾 Salva A</button>
+        <button class="preset-save-btn-sm" onclick="savePreset('b')">💾 Salva B</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GESTIONE SQUADRE -->
+  <div class="admin-section">
+    <div class="section-title">GESTIONE SQUADRE</div>
+    <div class="section-body" style="display:flex;flex-direction:column;gap:14px;">
+      <div class="team-mgmt-grid">
+        <div class="team-mgmt-box">
+          <div class="team-mgmt-label">SQUADRA A</div>
+          <input class="mgmt-input" id="teamANameInput" placeholder="Nome A" onblur="saveTeamName('a')">
+          <div class="mgmt-logo-preview"><img id="logoPreviewA" style="display:none" alt=""></div>
+          <label class="mgmt-upload-btn">📷 Logo<input type="file" accept="image/*" style="display:none" onchange="uploadLogo('a',this)"></label>
+        </div>
+        <div class="team-mgmt-box">
+          <div class="team-mgmt-label">SQUADRA B</div>
+          <input class="mgmt-input" id="teamBNameInput" placeholder="Nome B" onblur="saveTeamName('b')">
+          <div class="mgmt-logo-preview"><img id="logoPreviewB" style="display:none" alt=""></div>
+          <label class="mgmt-upload-btn">📷 Logo<input type="file" accept="image/*" style="display:none" onchange="uploadLogo('b',this)"></label>
+        </div>
+      </div>
+      <div>
+        <div class="json-upload-label">VIDEO GOAL</div>
+        <div class="video-upload-grid">
+          <div class="video-upload-box">
+            <label>Video Goal A</label>
+            <label class="video-upload-btn">🎬 Carica<input type="file" accept="video/*" style="display:none" onchange="uploadVideo('a',this)"></label>
+            <div class="video-status" id="videoStatusA"></div>
+          </div>
+          <div class="video-upload-box">
+            <label>Video Goal B</label>
+            <label class="video-upload-btn">🎬 Carica<input type="file" accept="video/*" style="display:none" onchange="uploadVideo('b',this)"></label>
+            <div class="video-status" id="videoStatusB"></div>
+          </div>
+        </div>
+      </div>
+      <div class="video-upload-box" style="background:rgba(255,107,0,.06);border-color:rgba(255,107,0,.25);">
+        <label style="color:var(--orange2);">Video Rigore Presidenziale</label>
+        <label class="video-upload-btn">🎬 Carica<input type="file" accept="video/*" style="display:none" onchange="uploadRigoreVideo(this)"></label>
+        <div class="video-status" id="rigoreVideoStatus"></div>
+      </div>
+      <div class="json-upload-area">
+        <div class="json-upload-label">CARICA SQUADRE DA JSON</div>
+        <label class="json-upload-btn">📂 Scegli file JSON<input type="file" accept=".json" style="display:none" onchange="loadTeamsJSON(this)"></label>
+      </div>
+      <div class="players-grid">
+        <div class="players-col">
+          <div class="players-col-title">Giocatori A</div>
+          <div class="player-add-row">
+            <input class="mgmt-input" id="playerInputA" placeholder="Nome" style="padding:7px 8px;">
+            <button class="player-add-btn" onclick="addPlayer('a')">+</button>
+          </div>
+          <div class="player-list" id="playerListA"></div>
+        </div>
+        <div class="players-col">
+          <div class="players-col-title">Giocatori B</div>
+          <div class="player-add-row">
+            <input class="mgmt-input" id="playerInputB" placeholder="Nome" style="padding:7px 8px;">
+            <button class="player-add-btn" onclick="addPlayer('b')">+</button>
+          </div>
+          <div class="player-list" id="playerListB"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPOSTAZIONI TEMPI -->
+  <div class="admin-section">
+    <div class="section-title">⏱ IMPOSTAZIONI TEMPI</div>
+    <div class="section-body">
+      <div class="settings-grid">
+        <div class="settings-row"><label>1° Tempo</label>         <input type="number" id="set_tempo1"      value="10" min="1" max="60"><span>min</span></div>
+        <div class="settings-row"><label>Momento Dado</label>     <input type="number" id="set_momentodado" value="2"  min="1" max="10"><span>min</span></div>
+        <div class="settings-row"><label>2° Tempo</label>         <input type="number" id="set_tempo2"      value="10" min="1" max="60"><span>min</span></div>
+        <div class="settings-row"><label>Gol x2</label>           <input type="number" id="set_golx2"       value="2"  min="1" max="10"><span>min</span></div>
+        <div class="settings-row"><label>Cart. Giallo</label>     <input type="number" id="set_yellow"      value="2"  min="1" max="30"><span>min</span></div>
+        <div class="settings-row"><label>Cart. Rosso</label>      <input type="number" id="set_red"         value="4"  min="1" max="60"><span>min</span></div>
+      </div>
+      <div class="section-title" style="margin:12px -12px;border-radius:0;">DURATA CARTE SPECIALI</div>
+      <div id="cardDurationGrid" class="settings-grid"></div>
+      <button class="settings-save-btn" onclick="saveSettings()">💾 Salva Impostazioni</button>
+    </div>
+  </div>
+
+  <!-- VIDEO TRANSIZIONI -->
+  <div class="admin-section">
+    <div class="section-title">🎬 VIDEO TRANSIZIONI FASE</div>
+    <div class="section-body">
+      <div id="transitionVideoList"></div>
+    </div>
+  </div>
+
+  <!-- SUONI -->
+  <div class="admin-section">
+    <div class="section-title">🔊 SUONI PERSONALIZZATI</div>
+    <div class="section-body">
+      <div id="customSoundList"></div>
+    </div>
+  </div>
+
+  <!-- RESET -->
+  <div class="admin-section">
+    <div class="section-title">RESET</div>
+    <div class="reset-section">
+      <button class="reset-btn" onclick="resetMatch()">🔄 RESET PARTITA</button>
+    </div>
+  </div>
+
+</div><!-- fine drawer -->
+
+<!-- ── GOAL PLAYER MODAL ─────────────────────────────────── -->
+<div class="card-team-modal" id="goalPlayerModal" onclick="if(event.target===this)closeGoalModal()">
+  <div class="card-team-panel">
+    <h3 id="goalPlayerModalTitle">CHI HA SEGNATO?</h3>
+    <div class="modal-team-btns" id="goalPlayerList" style="flex-direction:column;gap:8px;max-height:55vh;overflow-y:auto;"></div>
+    <button class="modal-noTeam-btn" onclick="confirmGoalAnonymous()">Anonimo / senza giocatore</button>
+    <button class="modal-cancel"     onclick="closeGoalModal()">Annulla</button>
+  </div>
+</div>
+
+<!-- ── CARD TEAM MODAL ───────────────────────────────────── -->
+<div class="card-team-modal" id="cardTeamModal" onclick="if(event.target===this)closeCardModal()">
+  <div class="card-team-panel">
+    <h3 id="cardModalTitle">CARTA</h3>
+    <h4>Assegna a quale squadra?</h4>
+    <div class="modal-team-btns">
+      <button class="modal-team-btn" id="cardModalTeamA" onclick="confirmCard('a')">Squadra A</button>
+      <button class="modal-team-btn" id="cardModalTeamB" onclick="confirmCard('b')">Squadra B</button>
+    </div>
+    <button class="modal-noTeam-btn" onclick="confirmCardNoTeam()">Senza squadra</button>
+    <button class="modal-cancel"     onclick="closeCardModal()">Annulla</button>
+  </div>
+</div>
+
+<!-- ── SCRIPTS ────────────────────────────────────────────── -->
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/shared.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+  function toggleSettingsDrawer() {
+    const drawer = document.getElementById('settingsDrawer');
+    const arrow  = document.getElementById('drawerArrow');
+    const open   = drawer.classList.toggle('open');
+    arrow.classList.toggle('open', open);
+  }
+
+  socket.on('state', s => {
+    const st = s.settings;
+    const setField = (id, val, div) => {
+      const el = document.getElementById(id);
+      if (el && document.activeElement !== el) el.value = Math.round(val / div);
+    };
+    setField('set_tempo1',      st.tempo1Duration,      60);
+    setField('set_momentodado', st.momentoDadoDuration, 60);
+    setField('set_tempo2',      st.tempo2Duration,      60);
+    setField('set_golx2',       st.golX2Duration,       60);
+    setField('set_yellow',      st.yellowCardDuration,  60);
+    setField('set_red',         st.redCardDuration,     60);
+  });
+</script>
+
+</body>
+</html>

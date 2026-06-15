@@ -1,0 +1,24 @@
+{
+  "Falchi Neri": {
+    "name": "Falchi Neri",
+    "logo": "/uploads/1781362665374_fenomeni_da_bar.png",
+    "players": [
+      "Marco Rossi",
+      "Luca Bianchi",
+      "Davide Conti",
+      "Simone Mori"
+    ],
+    "goalVideoUrl": null
+  },
+  "Tigers FC": {
+    "name": "Tigers FC",
+    "logo": null,
+    "players": [
+      "Andrea Russo",
+      "Giovanni Esposito",
+      "Francesco Ferrara",
+      "Antonio Greco"
+    ],
+    "goalVideoUrl": null
+  }
+}

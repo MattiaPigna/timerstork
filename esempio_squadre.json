@@ -1,0 +1,10 @@
+{
+  "a": {
+    "name": "Falchi Neri",
+    "players": ["Marco Rossi", "Luca Bianchi", "Davide Conti", "Simone Mori"]
+  },
+  "b": {
+    "name": "Tigers FC",
+    "players": ["Andrea Russo", "Giovanni Esposito", "Francesco Ferrara", "Antonio Greco"]
+  }
+}

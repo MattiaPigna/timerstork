@@ -1,0 +1,22 @@
+{
+  "squadra_a": {
+    "nome": "I Leoni del Campo",
+    "giocatori": [
+      "Giocatore A1",
+      "Giocatore A2",
+      "Giocatore A3",
+      "Giocatore A4",
+      "Giocatore A5"
+    ]
+  },
+  "squadra_b": {
+    "nome": "Atletico Calcetto",
+    "giocatori": [
+      "Giocatore B1",
+      "Giocatore B2",
+      "Giocatore B3",
+      "Giocatore B4",
+      "Giocatore B5"
+    ]
+  }
+}
