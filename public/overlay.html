@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>StorkLeague — OBS Overlay</title>
+  <link rel="stylesheet" href="/css/overlay.css">
+</head>
+<body>
+
+<!-- ── BARRA PRINCIPALE ──────────────────────────────────────── -->
+<div class="overlay-bar" id="overlayBar">
+  <div class="ob-left">
+    <img src="/logo.png" class="ob-logo" alt="">
+    <div class="ob-phase" id="obPhase">PRE</div>
+  </div>
+
+  <div class="ob-teams">
+    <div class="ob-team ob-team-a">
+      <div class="ob-team-logo-wrap"><img id="obImgA" src="" alt="" style="display:none"></div>
+      <div class="ob-team-name" id="obNameA">SQUADRA A</div>
+      <div class="ob-score" id="obScoreA">0</div>
+    </div>
+    <div class="ob-sep">—</div>
+    <div class="ob-team ob-team-b">
+      <div class="ob-score" id="obScoreB">0</div>
+      <div class="ob-team-name" id="obNameB">SQUADRA B</div>
+      <div class="ob-team-logo-wrap"><img id="obImgB" src="" alt="" style="display:none"></div>
+    </div>
+  </div>
+
+  <div class="ob-right">
+    <div class="ob-timer" id="obTimer">00:00</div>
+    <div class="ob-timer-label">MATCH TIMER</div>
+  </div>
+
+  <!-- animazione GOL (dentro la barra) -->
+  <div class="ob-anim-goal" id="obAnimGoal">
+    <div class="ob-goal-fly-track" id="obGoalFlyTrack"></div>
+    <div class="ob-goal-sweep" id="obGoalSweep"></div>
+    <div class="ob-goal-center" id="obGoalCenter"></div>
+  </div>
+
+  <!-- animazione FASE (copre la barra, slide verticale) -->
+  <div class="ob-anim-phase" id="obAnimPhase"></div>
+
+  <!-- animazione VAR (copre la barra) -->
+  <div class="ob-anim-var" id="obAnimVar"></div>
+</div>
+
+<!-- ── PANNELLI CARTE ────────────────────────────────────────── -->
+<div class="overlay-panels">
+  <div class="ob-panel ob-panel-a">
+    <div class="ob-card-slot ob-rigore-slot" id="slotRigoreA">
+      <div class="ob-slot-img-wrap">
+        <img src="/carte/rigore%20presidenziale(4)_senza_sfondo.png" alt="Rigore">
+        <div class="ob-slot-tick" id="slotRigoreATick">✓</div>
+      </div>
+      <div class="ob-slot-footer"><div class="ob-slot-name">RIGORE PRES.</div></div>
+    </div>
+    <div class="ob-card-slot" id="slotA">
+      <div class="ob-slot-img-wrap">
+        <img id="slotAImg" src="" alt="">
+        <div class="ob-slot-tick" id="slotATick">✓</div>
+      </div>
+      <div class="ob-slot-footer">
+        <div class="ob-slot-name" id="slotAName">NESSUNA CARTA</div>
+        <div class="ob-slot-timer" id="slotATimer"></div>
+        <div class="ob-slot-bar-wrap" id="slotABarWrap"><div class="ob-slot-bar" id="slotABar"></div></div>
+      </div>
+    </div>
+    <!-- badge VAR squadra A -->
+    <div class="ob-var-badge" id="varBadgeA">
+      <span class="ob-var-icon">🔍</span>
+      <span class="ob-var-text">VAR</span>
+      <span class="ob-var-tick" id="varTickA"></span>
+    </div>
+  </div>
+
+  <div class="ob-panel ob-panel-b">
+    <!-- badge VAR squadra B -->
+    <div class="ob-var-badge" id="varBadgeB">
+      <span class="ob-var-tick" id="varTickB"></span>
+      <span class="ob-var-text">VAR</span>
+      <span class="ob-var-icon">🔍</span>
+    </div>
+    <div class="ob-card-slot ob-rigore-slot" id="slotRigoreB">
+      <div class="ob-slot-img-wrap">
+        <img src="/carte/rigore%20presidenziale(4)_senza_sfondo.png" alt="Rigore">
+        <div class="ob-slot-tick" id="slotRigoreBTick">✓</div>
+      </div>
+      <div class="ob-slot-footer"><div class="ob-slot-name">RIGORE PRES.</div></div>
+    </div>
+    <div class="ob-card-slot" id="slotB">
+      <div class="ob-slot-img-wrap">
+        <img id="slotBImg" src="" alt="">
+        <div class="ob-slot-tick" id="slotBTick">✓</div>
+      </div>
+      <div class="ob-slot-footer">
+        <div class="ob-slot-name" id="slotBName">NESSUNA CARTA</div>
+        <div class="ob-slot-timer" id="slotBTimer"></div>
+        <div class="ob-slot-bar-wrap" id="slotBBarWrap"><div class="ob-slot-bar" id="slotBBar"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ANIMAZIONE CARTA SPECIALE (flip, sotto barra) ─────────── -->
+<div class="ob-anim-card" id="obAnimCard">
+  <div class="ob-card-flip-scene">
+    <div class="ob-card-flip-inner" id="obCardFlipInner">
+      <div class="ob-card-face ob-card-back"><img src="/carte/retro(2)_senza_sfondo.png" alt=""></div>
+      <div class="ob-card-face ob-card-front"><img id="obCardFlipImg" src="" alt=""></div>
+    </div>
+  </div>
+  <div class="ob-card-flip-name" id="obCardFlipName"></div>
+  <div class="ob-card-flip-team" id="obCardFlipTeam"></div>
+</div>
+
+<!-- ── ANIMAZIONE RIGORE PRES. (zoom, sotto barra) ───────────── -->
+<div class="ob-anim-rigore" id="obAnimRigore">
+  <img src="/carte/rigore%20presidenziale(4)_senza_sfondo.png" alt="Rigore">
+  <div class="ob-rigore-anim-label">RIGORE<br>PRESIDENZIALE</div>
+</div>
+
+<!-- ── ANIMAZIONE CARTELLINO (scende dalla barra) ────────────── -->
+<div class="ob-anim-disc" id="obAnimDisc"></div>
+
+<!-- ── CARTELLINI DISCIPLINARI (lista persistente) ───────────── -->
+<div class="overlay-disc" id="overlayDisc"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/shared.js"></script>
+<script src="/js/overlay.js"></script>
+</body>
+</html>

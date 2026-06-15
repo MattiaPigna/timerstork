@@ -66,6 +66,38 @@ socket.on('animation', data => {
   }
 });
 
+let varResultTimeout = null;
+socket.on('varCall', data => {
+  if (!state) return;
+  const teamName = data.team === 'a' ? state.teams.a.name : state.teams.b.name;
+  const overlay = document.getElementById('varOverlay');
+  overlay.innerHTML = `
+    <div class="var-content">
+      <div class="var-icon">🔍</div>
+      <div class="var-label">VAR</div>
+      <div class="var-team">${teamName}</div>
+      <div class="var-status var-blink">IN CORSO…</div>
+    </div>`;
+  overlay.classList.add('active');
+  clearTimeout(varResultTimeout);
+});
+
+socket.on('varResult', data => {
+  const overlay = document.getElementById('varOverlay');
+  const isConf  = data.result === 'confirmed';
+  const icon    = isConf ? '✓' : '✗';
+  const label   = isConf ? 'CONFERMATO' : 'RIBALTATO';
+  const cls     = isConf ? 'var-confirmed' : 'var-overturned';
+  overlay.innerHTML = `
+    <div class="var-content">
+      <div class="var-icon">${isConf ? '✅' : '❌'}</div>
+      <div class="var-label" style="${isConf ? 'color:#00C56E;text-shadow:0 0 60px rgba(0,197,110,.8)' : 'color:#E51B1B;text-shadow:0 0 60px rgba(229,27,27,.8)'}">VAR</div>
+      <div class="var-status ${cls}">${icon} ${label}</div>
+    </div>`;
+  clearTimeout(varResultTimeout);
+  varResultTimeout = setTimeout(() => overlay.classList.remove('active'), 4000);
+});
+
 socket.on('playerEntryAlert', data => {
   playCustomSound('playerAlert', playPlayerEntryAlert);
   showPlayerEntryAlert(data.minute);
@@ -417,11 +449,29 @@ function showGoalAnimation(team, goals, playerName) {
 }
 
 // ─── VICTORY SCREEN ───────────────────────────────────────────────────────────
+function buildGoalLogHtml() {
+  const log = state.goalLog || [];
+  if (!log.length) return '';
+  const rows = log.map(e => {
+    const teamName = e.team === 'a' ? state.teams.a.name : state.teams.b.name;
+    const scorer   = e.playerName ? `<span class="vgl-player">${e.playerName}</span>` : '';
+    return `<div class="vgl-row">
+      <span class="vgl-min">${formatTime(e.timerValue)}</span>
+      <span class="vgl-team">${teamName}</span>
+      ${scorer}
+      <span class="vgl-score">${e.scoreA}–${e.scoreB}</span>
+    </div>`;
+  }).join('');
+  return `<div class="victory-goal-log"><div class="vgl-title">MARCATORI</div>${rows}</div>`;
+}
+
 function showVictoryScreen() {
   if (!state) return;
   const ga = state.teams.a.goals;
   const gb = state.teams.b.goals;
   const overlay = document.getElementById('victoryOverlay');
+  const goalLog = buildGoalLogHtml();
+  const pdfBtn  = `<button class="victory-pdf-btn" onclick="downloadMatchPDF()">⬇ Scarica riepilogo PDF</button>`;
   let html;
   if (ga === gb) {
     html = `
@@ -435,13 +485,13 @@ function showVictoryScreen() {
           <span class="victory-team-sm">${state.teams.b.name}</span>
           ${state.teams.b.logo ? `<img class="victory-logo-sm" src="${state.teams.b.logo}" alt="">` : ''}
         </div>
+        ${goalLog}
+        ${pdfBtn}
       </div>
     `;
   } else {
-    const w = ga > gb ? 'a' : 'b';
-    const l = w === 'a' ? 'b' : 'a';
+    const w  = ga > gb ? 'a' : 'b';
     const wt = state.teams[w];
-    const lt = state.teams[l];
     html = `
       <div class="victory-content">
         <div class="victory-label">VINCITORE</div>
@@ -453,11 +503,106 @@ function showVictoryScreen() {
           <span class="victory-vs-sep">vs</span>
           <span class="victory-team-sm">${state.teams.b.name}</span>
         </div>
+        ${goalLog}
+        ${pdfBtn}
       </div>
     `;
   }
   overlay.innerHTML = html;
   overlay.classList.add('active');
+}
+
+// ─── PDF RIEPILOGO ────────────────────────────────────────────────────────────
+function downloadMatchPDF() {
+  if (typeof window.jspdf === 'undefined') { alert('Libreria PDF non caricata'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  const orange = [255, 107, 0];
+  const white  = [255, 255, 255];
+  const black  = [20, 20, 20];
+  const gray   = [100, 100, 100];
+
+  // Header band
+  doc.setFillColor(...orange);
+  doc.rect(0, 0, 210, 28, 'F');
+  doc.setTextColor(...white);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.text('STORK LEAGUE', 105, 12, { align: 'center' });
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Riepilogo Partita', 105, 20, { align: 'center' });
+
+  // Date
+  doc.setTextColor(...gray);
+  doc.setFontSize(9);
+  doc.text(new Date().toLocaleDateString('it-IT', { day:'2-digit', month:'long', year:'numeric' }), 105, 26, { align: 'center' });
+
+  // Score block
+  const ga = state.teams.a.goals;
+  const gb = state.teams.b.goals;
+  doc.setTextColor(...black);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.text(state.teams.a.name, 52, 44, { align: 'center' });
+  doc.text(state.teams.b.name, 158, 44, { align: 'center' });
+  doc.setFontSize(36);
+  doc.setTextColor(...orange);
+  doc.text(`${ga}  –  ${gb}`, 105, 58, { align: 'center' });
+
+  // Result label
+  doc.setFontSize(11);
+  doc.setTextColor(...gray);
+  if (ga === gb) {
+    doc.text('PAREGGIO', 105, 66, { align: 'center' });
+  } else {
+    const winner = ga > gb ? state.teams.a.name : state.teams.b.name;
+    doc.text(`VINCITORE: ${winner}`, 105, 66, { align: 'center' });
+  }
+
+  // Separator
+  doc.setDrawColor(...orange);
+  doc.setLineWidth(0.6);
+  doc.line(15, 72, 195, 72);
+
+  // Goal log table
+  const log = state.goalLog || [];
+  if (log.length) {
+    doc.setTextColor(...orange);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('MARCATORI', 15, 80);
+
+    doc.autoTable({
+      startY: 84,
+      head: [['Minuto', 'Squadra', 'Giocatore', 'Risultato']],
+      body: log.map(e => [
+        formatTime(e.timerValue),
+        e.team === 'a' ? state.teams.a.name : state.teams.b.name,
+        e.playerName || '—',
+        `${e.scoreA} – ${e.scoreB}`,
+      ]),
+      styles: { font: 'helvetica', fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: orange, textColor: white, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [248, 248, 248] },
+      margin: { left: 15, right: 15 },
+    });
+  } else {
+    doc.setTextColor(...gray);
+    doc.setFontSize(10);
+    doc.text('Nessun gol registrato.', 15, 82);
+  }
+
+  // Footer
+  const pageH = doc.internal.pageSize.getHeight();
+  doc.setFillColor(...orange);
+  doc.rect(0, pageH - 10, 210, 10, 'F');
+  doc.setTextColor(...white);
+  doc.setFontSize(8);
+  doc.text('Stork League © ' + new Date().getFullYear(), 105, pageH - 3.5, { align: 'center' });
+
+  doc.save(`storkleague_${state.teams.a.name}_vs_${state.teams.b.name}.pdf`);
 }
 
 // ─── RIGORE PRESIDENZIALE ─────────────────────────────────────────────────────

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StorkLeague — VAR</title>
+  <link rel="stylesheet" href="/css/var.css">
+</head>
+<body>
+
+<div id="varScreen" class="var-screen hidden">
+  <div class="var-video-wrap" id="varVideoWrap">
+    <video id="varVideo" playsinline></video>
+  </div>
+
+  <!-- Badge VAR in alto -->
+  <div class="var-badge-top">
+    <span class="var-badge-icon">🔍</span>
+    <span class="var-badge-text">VAR</span>
+  </div>
+
+  <!-- Stato centrale (appare solo durante caricamento) -->
+  <div class="var-state-label" id="varStateLabel"></div>
+</div>
+
+<!-- Schermata standby -->
+<div id="varStandby" class="var-standby">
+  <div class="var-standby-icon">🔍</div>
+  <div class="var-standby-text">VAR</div>
+  <div class="var-standby-sub">In attesa di un clip…</div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/shared.js"></script>
+<script src="/js/var.js"></script>
+</body>
+</html>

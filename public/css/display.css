@@ -476,6 +476,63 @@ footer.display-footer {
 @keyframes victoryName  { from{opacity:0;transform:scale(.6) translateY(20px)} to{opacity:1;transform:scale(1) translateY(0)} }
 @keyframes victoryScore { from{opacity:0;transform:scale(.5)} to{opacity:1;transform:scale(1)} }
 
+/* ── VICTORY GOAL LOG ────────────────────────────────────────── */
+.victory-goal-log {
+  margin-top: 1.2vh;
+  background: rgba(255,107,0,.08);
+  border: 1px solid rgba(255,107,0,.25);
+  border-radius: 10px;
+  padding: 1vh 2vw;
+  min-width: 40vw; max-width: 60vw;
+  animation: fadeInUp .6s ease .8s both;
+}
+.vgl-title {
+  font-family: 'Rajdhani', sans-serif; font-size: 1.2vh; font-weight: 900;
+  letter-spacing: .35em; color: var(--orange); opacity: .7;
+  text-align: center; margin-bottom: .8vh;
+}
+.vgl-row {
+  display: flex; align-items: center; gap: 1.2vw;
+  padding: .45vh 0;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  font-family: 'Rajdhani', sans-serif; font-size: 1.8vh; font-weight: 600;
+}
+.vgl-row:last-child { border-bottom: none; }
+.vgl-min    { color: var(--orange); font-family: 'Bebas Neue', sans-serif; font-size: 1.9vh; min-width: 4.5vw; }
+.vgl-team   { flex: 1; color: rgba(255,255,255,.85); }
+.vgl-player { color: rgba(255,255,255,.5); font-size: 1.5vh; }
+.vgl-score  { color: rgba(255,255,255,.4); font-family: 'Bebas Neue', sans-serif; font-size: 1.6vh; min-width: 4vw; text-align: right; }
+
+/* ── VICTORY PDF BUTTON ──────────────────────────────────────── */
+.victory-pdf-btn {
+  margin-top: 1.5vh;
+  padding: .9vh 3vw;
+  background: rgba(255,107,0,.15);
+  border: 1.5px solid rgba(255,107,0,.5);
+  border-radius: 8px;
+  color: var(--orange);
+  font-family: 'Rajdhani', sans-serif; font-size: 1.8vh; font-weight: 700;
+  letter-spacing: .12em; cursor: pointer;
+  transition: background .2s;
+  animation: fadeInUp .6s ease 1s both;
+}
+.victory-pdf-btn:hover { background: rgba(255,107,0,.28); }
+
+/* VAR */
+#varOverlay { background: rgba(0,0,0,.95); flex-direction: column; gap: 2vh; z-index: 260; }
+.var-content { display: flex; flex-direction: column; align-items: center; gap: 2.5vh; animation: victoryEnter .5s ease; }
+.var-icon    { font-size: 10vh; animation: ptIcon .6s ease; }
+.var-label   {
+  font-family: 'Bebas Neue', sans-serif; font-size: 14vh; letter-spacing: .18em;
+  color: #FFD700; text-shadow: 0 0 60px rgba(255,215,0,.8); line-height: 1;
+}
+.var-team    { font-family: 'Rajdhani', sans-serif; font-size: 3.5vh; font-weight: 700; letter-spacing: .25em; color: rgba(255,255,255,.55); }
+.var-status  { font-family: 'Bebas Neue', sans-serif; font-size: 5vh; letter-spacing: .3em; animation: fadeInUp .4s ease; }
+.var-blink   { animation: varBlink 1s ease-in-out infinite; color: #FFD700; }
+.var-confirmed { color: #00C56E; text-shadow: 0 0 40px rgba(0,197,110,.8); }
+.var-overturned { color: #E51B1B; text-shadow: 0 0 40px rgba(229,27,27,.8); }
+@keyframes varBlink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
 /* Rigore */
 #rigorePresOverlay { background: rgba(0,0,0,.97); flex-direction: column; gap: 3vh; z-index: 250; }
 .rigore-content { display: flex; flex-direction: column; align-items: center; gap: 2vh; }

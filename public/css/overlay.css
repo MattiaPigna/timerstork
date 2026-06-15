@@ -1,0 +1,473 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@600;700;900&display=swap');
+
+:root {
+  --orange:  #FF6B00;
+  --orange2: #FF8A30;
+  --white:   #FFFFFF;
+  --green:   #00C56E;
+  --bar-h:   76px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 1920px; height: 1080px;
+  background: transparent !important;
+  overflow: hidden;
+  font-family: 'Rajdhani', sans-serif;
+  user-select: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BARRA PRINCIPALE
+   ══════════════════════════════════════════════════════════════ */
+.overlay-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: var(--bar-h);
+  display: flex; align-items: center;
+  background: linear-gradient(180deg, rgba(6,6,6,.96) 0%, rgba(6,6,6,.90) 100%);
+  border-bottom: 3px solid var(--orange);
+  box-shadow: 0 4px 40px rgba(255,107,0,.28);
+  overflow: hidden; /* contiene le animazioni */
+}
+
+.ob-left {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 108px; height: 100%; padding: 0 12px;
+  border-right: 1px solid rgba(255,107,0,.18);
+  gap: 3px; flex-shrink: 0;
+}
+.ob-logo { height: 30px; filter: drop-shadow(0 0 8px rgba(255,107,0,.55)); }
+.ob-phase {
+  font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: .22em;
+  color: var(--orange); background: rgba(255,107,0,.11);
+  padding: 1px 8px; border-radius: 3px; border: 1px solid rgba(255,107,0,.28);
+}
+
+.ob-teams {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 22px; height: 100%; padding: 0 20px;
+}
+.ob-team { display: flex; align-items: center; gap: 12px; }
+.ob-team-a { flex-direction: row; }
+.ob-team-b { flex-direction: row-reverse; }
+.ob-team-logo-wrap { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ob-team-logo-wrap img { max-width: 50px; max-height: 50px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,.8)); }
+.ob-team-name { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: .1em; color: var(--white); text-shadow: 0 2px 8px rgba(0,0,0,.9); white-space: nowrap; }
+.ob-score {
+  font-family: 'Bebas Neue', sans-serif; font-size: 50px; line-height: 1;
+  color: var(--white); text-shadow: 0 0 28px rgba(255,107,0,.3), 0 2px 10px rgba(0,0,0,.9);
+  min-width: 38px; text-align: center; position: relative; z-index: 2;
+}
+.ob-score.bump { animation: obScoreBump .4s ease-out; }
+.ob-sep { font-family: 'Bebas Neue', sans-serif; font-size: 34px; color: var(--orange); opacity: .55; margin: 0 4px; }
+
+.ob-right {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 148px; height: 100%; padding: 0 16px;
+  border-left: 1px solid rgba(255,107,0,.18);
+  flex-shrink: 0; gap: 1px;
+}
+.ob-timer {
+  font-family: 'Bebas Neue', sans-serif; font-size: 42px; letter-spacing: .06em;
+  color: var(--orange); text-shadow: 0 0 20px rgba(255,107,0,.8), 0 0 40px rgba(255,107,0,.3);
+  line-height: 1;
+}
+.ob-timer.warning { color: #FF3333; text-shadow: 0 0 20px rgba(255,50,50,1), 0 0 40px rgba(255,50,50,.5); }
+.ob-timer-label { font-family: 'Rajdhani', sans-serif; font-size: 9px; letter-spacing: .3em; color: rgba(255,107,0,.45); text-transform: uppercase; }
+
+/* ══════════════════════════════════════════════════════════════
+   ANIMAZIONE GOL — dentro la barra
+   ══════════════════════════════════════════════════════════════ */
+.ob-anim-goal {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 20;
+  transition: opacity .2s;
+  /* stesso sfondo della barra — copre completamente score/timer sottostanti */
+  background: linear-gradient(180deg, rgba(6,6,6,.96) 0%, rgba(6,6,6,.90) 100%);
+}
+.ob-anim-goal.active { opacity: 1; }
+
+/* Testo "GOL!" che attraversa la barra orizzontalmente */
+.ob-gol-fly {
+  position: absolute;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: .06em;
+  white-space: nowrap;
+  top: var(--top);
+  font-size: var(--size);
+  color: var(--col);
+  opacity: 0;
+  animation: obGolFly var(--spd) ease-in-out var(--delay) both;
+}
+
+/* Sweep luminoso che attraversa la barra */
+.ob-goal-sweep {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,215,0,.08) 30%,
+    rgba(255,107,0,.22) 50%,
+    rgba(255,215,0,.08) 70%,
+    transparent 100%);
+  animation: obGoalSweep 1.6s ease both;
+  transform: translateX(-110%);
+}
+
+/* Bordo inferiore che pulse durante il gol */
+.ob-anim-goal.active ~ * { --ignored: 1; }
+
+/* Testo centrale con nome squadra e risultato */
+.ob-goal-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0;
+  z-index: 5;
+}
+.ob-goal-big {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 54px; letter-spacing: .18em; line-height: 1;
+  color: #FFD700;
+  text-shadow: 0 0 30px rgba(255,215,0,.9), 0 0 60px rgba(255,107,0,.6);
+  animation: obGoalBigPop .45s cubic-bezier(.17,.67,.4,1.35) .3s both;
+}
+.ob-goal-sub-bar {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 16px; letter-spacing: .3em;
+  color: rgba(255,255,255,.65);
+  animation: obGoalBigPop .4s ease .5s both;
+}
+
+/* Glow border durante gol */
+.ob-anim-goal.active ~ .overlay-panels { /* unused intentional */ }
+
+/* ══════════════════════════════════════════════════════════════
+   ANIMAZIONE FASE — copre la barra con slide verticale
+   ══════════════════════════════════════════════════════════════ */
+.ob-anim-phase {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center; gap: 28px;
+  background: rgba(6,6,6,.97);
+  border-bottom: 3px solid var(--orange);
+  z-index: 30;
+  transform: translateY(-100%);
+  transition: transform .38s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+}
+.ob-anim-phase.active { transform: translateY(0); }
+
+.ob-phase-icon {
+  font-size: 36px; line-height: 1;
+  animation: obPhaseIcon .5s cubic-bezier(.17,.67,.83,.67) .1s both;
+}
+.ob-phase-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 46px; letter-spacing: .22em;
+  color: var(--orange);
+  text-shadow: 0 0 30px rgba(255,107,0,.7);
+  animation: obPhaseLbl .4s ease .15s both;
+}
+.ob-phase-sub {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px; font-weight: 700; letter-spacing: .25em;
+  color: rgba(255,255,255,.45); text-transform: uppercase;
+  animation: obPhaseLbl .4s ease .25s both;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ANIMAZIONE CARTELLINO — scende dalla barra sul lato squadra
+   ══════════════════════════════════════════════════════════════ */
+.ob-anim-disc {
+  position: absolute;
+  top: calc(var(--bar-h) + 3px);
+  pointer-events: none;
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(6,6,6,.92);
+  border: 2px solid rgba(255,255,255,.18);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  padding: 7px 18px 10px;
+  opacity: 0;
+  z-index: 25;
+  transition: opacity .25s;
+  left: 50%; transform: translateX(-50%);
+}
+.ob-anim-disc.active { opacity: 1; animation: obDiscSlide .38s cubic-bezier(.4,0,.2,1); }
+.ob-anim-disc.team-a { left: 28%; transform: none; }
+.ob-anim-disc.team-b { left: auto; right: 28%; transform: none; }
+
+.ob-disc-shape {
+  width: 22px; height: 30px; border-radius: 3px; flex-shrink: 0;
+}
+.ob-disc-shape.yellow { background: #FFD700; box-shadow: 0 0 14px rgba(255,215,0,.85); }
+.ob-disc-shape.red    { background: #E51B1B; box-shadow: 0 0 14px rgba(229,27,27,.85); }
+
+.ob-disc-info { display: flex; flex-direction: column; gap: 1px; }
+.ob-disc-pname { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: .12em; color: var(--white); line-height: 1; }
+.ob-disc-tname { font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .15em; color: rgba(255,255,255,.45); text-transform: uppercase; }
+
+/* ══════════════════════════════════════════════════════════════
+   ANIMAZIONE VAR — copre la barra (come fase)
+   ══════════════════════════════════════════════════════════════ */
+.ob-anim-var {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center; gap: 20px;
+  background: rgba(6,6,6,.97);
+  border-bottom: 3px solid #FFD700;
+  z-index: 35;
+  transform: translateY(-100%);
+  transition: transform .35s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+}
+.ob-anim-var.active { transform: translateY(0); }
+
+.ob-var-anim-icon  { font-size: 30px; line-height: 1; animation: obPhaseIcon .5s ease .1s both; }
+.ob-var-anim-label {
+  font-family: 'Bebas Neue', sans-serif; font-size: 46px; letter-spacing: .25em;
+  color: #FFD700; text-shadow: 0 0 30px rgba(255,215,0,.7);
+  animation: obPhaseLbl .4s ease .15s both;
+}
+.ob-var-anim-team  {
+  font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: .2em;
+  color: rgba(255,255,255,.45);
+  animation: obPhaseLbl .4s ease .2s both;
+}
+.ob-var-anim-status {
+  font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: .22em;
+  animation: obPhaseLbl .4s ease .25s both;
+}
+.ob-var-anim-status.blink  { color: #FFD700; animation: obVarBlink 1s ease-in-out infinite; }
+.ob-var-anim-status.conf   { color: #00C56E; text-shadow: 0 0 20px rgba(0,197,110,.8); }
+.ob-var-anim-status.over   { color: #E51B1B; text-shadow: 0 0 20px rgba(229,27,27,.8); }
+@keyframes obVarBlink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+/* ══════════════════════════════════════════════════════════════
+   BADGE VAR per squadra (nei pannelli)
+   ══════════════════════════════════════════════════════════════ */
+.ob-var-badge {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(6,6,6,.82);
+  border: 1.5px solid rgba(255,215,0,.4);
+  border-top: none; border-radius: 0 0 10px 10px;
+  padding: 4px 12px 6px;
+  min-width: 70px; justify-content: center;
+  transition: border-color .4s, background .4s;
+}
+.ob-var-badge.used {
+  border-color: rgba(0,197,110,.45);
+  background: rgba(0,20,10,.85);
+}
+.ob-var-badge.overturned {
+  border-color: rgba(229,27,27,.45);
+  background: rgba(20,0,0,.85);
+}
+.ob-var-icon { font-size: 13px; line-height: 1; }
+.ob-var-text {
+  font-family: 'Bebas Neue', sans-serif; font-size: 14px; letter-spacing: .2em;
+  color: rgba(255,215,0,.7);
+}
+.ob-var-badge.used .ob-var-text       { color: rgba(0,197,110,.7); }
+.ob-var-badge.overturned .ob-var-text { color: rgba(229,27,27,.7); }
+.ob-var-tick       { font-size: 13px; color: var(--green); font-weight: 900; }
+.ob-var-tick.red   { color: #E51B1B; }
+
+/* ══════════════════════════════════════════════════════════════
+   ANIMAZIONE CARTA SPECIALE (flip 3D, sotto barra)
+   ══════════════════════════════════════════════════════════════ */
+.ob-anim-card {
+  position: absolute;
+  top: calc(var(--bar-h) + 3px);
+  left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 40;
+  transition: opacity .25s;
+}
+.ob-anim-card.active { opacity: 1; animation: obSlideDown .35s ease; }
+
+.ob-card-flip-scene { perspective: 900px; width: 90px; height: 126px; }
+.ob-card-flip-inner {
+  width: 100%; height: 100%;
+  position: relative; transform-style: preserve-3d;
+  transition: transform .75s cubic-bezier(.4,0,.2,1);
+}
+.ob-card-flip-inner.flipped { transform: rotateY(180deg); }
+
+.ob-card-face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.ob-card-face img { width: 100%; height: 100%; object-fit: contain; }
+.ob-card-back  { background: rgba(10,10,10,.7); }
+.ob-card-front { transform: rotateY(180deg); background: rgba(10,10,10,.7); }
+
+.ob-card-flip-name {
+  font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: .2em;
+  color: var(--orange); text-align: center;
+  text-shadow: 0 0 15px rgba(255,107,0,.6);
+  animation: obPhaseLbl .4s ease .5s both;
+}
+.ob-card-flip-team {
+  font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700;
+  letter-spacing: .15em; color: rgba(255,255,255,.4); text-align: center;
+  animation: obPhaseLbl .4s ease .6s both;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ANIMAZIONE RIGORE PRES. (zoom, sotto barra)
+   ══════════════════════════════════════════════════════════════ */
+.ob-anim-rigore {
+  position: absolute;
+  top: calc(var(--bar-h) + 3px);
+  left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 41;
+  transition: opacity .3s;
+}
+.ob-anim-rigore.active {
+  opacity: 1;
+  animation: obSlideDown .35s ease;
+}
+.ob-anim-rigore img {
+  height: 100px; object-fit: contain;
+  filter: drop-shadow(0 0 20px rgba(255,107,0,.9)) drop-shadow(0 4px 14px rgba(0,0,0,.8));
+  animation: obRigoreZoom .6s cubic-bezier(.17,.67,.4,1.35) both;
+}
+.ob-rigore-anim-label {
+  font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: .22em;
+  color: var(--orange); text-align: center; line-height: 1.2;
+  text-shadow: 0 0 15px rgba(255,107,0,.7);
+  animation: obPhaseLbl .4s ease .4s both;
+}
+@keyframes obRigoreZoom { 0%{transform:scale(.3) translateY(-20px);opacity:0} 65%{transform:scale(1.08)} 100%{transform:scale(1);opacity:1} }
+
+/* ══════════════════════════════════════════════════════════════
+   PANNELLI CARTE
+   ══════════════════════════════════════════════════════════════ */
+.overlay-panels {
+  position: absolute; top: calc(var(--bar-h) + 3px); left: 0; right: 0;
+  display: flex; justify-content: space-between;
+  pointer-events: none;
+}
+.ob-panel { display: flex; align-items: flex-start; }
+.ob-panel-a { flex-direction: row; }
+.ob-panel-b { flex-direction: row-reverse; }
+
+.ob-card-slot {
+  display: flex; flex-direction: column; align-items: center;
+  background: linear-gradient(180deg, transparent 55%, rgba(6,6,6,.82) 100%);
+  border-left: 2px solid rgba(255,107,0,.22);
+  border-right: 2px solid rgba(255,107,0,.22);
+  border-bottom: 2px solid rgba(255,107,0,.22);
+  border-radius: 0 0 14px 14px;
+  padding: 0 0 8px;
+  min-width: 130px;
+  transition: border-color .4s;
+  overflow: hidden;
+}
+.ob-rigore-slot { min-width: 110px; }
+
+.ob-card-slot.state-none     { opacity: 0; pointer-events: none; }
+.ob-card-slot.state-available { border-color: rgba(255,107,0,.22); }
+.ob-card-slot.state-active    { border-color: var(--orange); box-shadow: 0 6px 24px rgba(255,107,0,.18); }
+.ob-card-slot.state-played    { border-color: rgba(0,197,110,.45); background: linear-gradient(180deg, transparent 55%, rgba(0,20,10,.85) 100%); }
+
+.ob-slot-img-wrap {
+  position: relative; display: flex;
+  align-items: flex-end; justify-content: center;
+  width: 100%; padding-top: 6px;
+}
+.ob-card-slot img {
+  height: 100px; object-fit: contain;
+  filter: drop-shadow(0 4px 14px rgba(0,0,0,.85));
+  transition: opacity .4s, filter .4s; display: block;
+}
+.ob-rigore-slot img { height: 82px; }
+.ob-card-slot.state-played img { opacity: .38; filter: drop-shadow(0 2px 8px rgba(0,0,0,.7)) grayscale(55%); }
+.ob-card-slot.state-none img   { display: none; }
+
+.ob-slot-tick {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 44px; font-weight: 900; color: var(--green);
+  text-shadow: 0 0 16px rgba(0,197,110,.95), 0 0 30px rgba(0,197,110,.5);
+  opacity: 0; transition: opacity .3s; line-height: 1;
+}
+.ob-card-slot.state-played .ob-slot-tick { opacity: 1; }
+
+.ob-slot-footer { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 5px 10px 0; width: 100%; }
+.ob-slot-name {
+  font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: .18em;
+  color: rgba(255,255,255,.5); text-align: center; white-space: nowrap;
+}
+.ob-card-slot.state-active .ob-slot-name { color: var(--orange); }
+.ob-card-slot.state-played .ob-slot-name { color: var(--green); opacity: .65; }
+.ob-slot-timer { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: .05em; color: var(--white); line-height: 1; }
+.ob-slot-bar-wrap { width: 88%; height: 4px; background: rgba(255,255,255,.1); border-radius: 2px; overflow: hidden; margin-top: 2px; }
+.ob-slot-bar { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #ff9900, var(--orange)); transition: width .95s linear; }
+.ob-slot-bar.low { background: linear-gradient(90deg, #cc0000, #ff4444); }
+
+/* ══════════════════════════════════════════════════════════════
+   CARTELLINI DISCIPLINARI (lista persistente)
+   ══════════════════════════════════════════════════════════════ */
+.overlay-disc {
+  position: absolute; top: calc(var(--bar-h) + 3px); left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; pointer-events: none;
+}
+.ob-disc-badge {
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(6,6,6,.88); border: 1.5px solid rgba(255,255,255,.14);
+  border-top: none; border-radius: 0 0 10px 10px; padding: 5px 12px 7px;
+}
+.ob-disc-color { width: 13px; height: 18px; border-radius: 2px; }
+.ob-disc-color.yellow { background: #FFD700; box-shadow: 0 0 8px rgba(255,215,0,.55); }
+.ob-disc-color.red    { background: #E51B1B; box-shadow: 0 0 8px rgba(229,27,27,.55); }
+.ob-disc-text { font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; color: rgba(255,255,255,.8); }
+.ob-disc-time { font-family: 'Bebas Neue', sans-serif; font-size: 15px; color: rgba(255,255,255,.45); }
+
+/* ══════════════════════════════════════════════════════════════
+   FASI COLORE
+   ══════════════════════════════════════════════════════════════ */
+.phase-golx2 .ob-timer    { color: #FF3333; text-shadow: 0 0 20px rgba(255,50,50,1); }
+.phase-golx2 .overlay-bar { border-bottom-color: #FF3333; }
+.phase-golx2 .ob-sep      { color: #FF3333; }
+.phase-momentodado .ob-phase { background: rgba(255,138,48,.14); border-color: rgba(255,138,48,.35); color: var(--orange2); }
+
+/* ══════════════════════════════════════════════════════════════
+   KEYFRAMES
+   ══════════════════════════════════════════════════════════════ */
+/* Score */
+@keyframes obScoreBump { 0%{transform:scale(1)} 40%{transform:scale(1.28)} 100%{transform:scale(1)} }
+
+/* GOL fly (parole che attraversano la barra) */
+@keyframes obGolFly {
+  0%   { transform: translateX(1980px); opacity: 0; }
+  6%   { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: translateX(-1980px); opacity: 0; }
+}
+/* Sweep luminoso sul gol */
+@keyframes obGoalSweep { 0%{transform:translateX(-110%)} 100%{transform:translateX(110%)} }
+/* Testo centrale gol */
+@keyframes obGoalBigPop { 0%{transform:scale(.3);opacity:0} 60%{transform:scale(1.08)} 100%{transform:scale(1);opacity:1} }
+
+/* Fase */
+@keyframes obPhaseIcon { 0%{transform:scale(0) rotate(-15deg);opacity:0} 65%{transform:scale(1.15) rotate(3deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
+@keyframes obPhaseLbl  { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:none} }
+
+/* Cartellino disciplina */
+@keyframes obDiscSlide { from{transform:translateY(-18px);opacity:0} 60%{transform:translateY(3px)} to{transform:translateY(0);opacity:1} }
+
+/* Slide giù per carta/rigore */
+@keyframes obSlideDown { from{opacity:0;transform:translateX(-50%) translateY(-18px)} 60%{transform:translateX(-50%) translateY(4px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+.ob-anim-disc.team-a { animation-name: obDiscSlide; }
+.ob-anim-disc.team-b { animation-name: obDiscSlide; }

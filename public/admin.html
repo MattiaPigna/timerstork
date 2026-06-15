@@ -44,6 +44,22 @@
       color: var(--orange); line-height: 1.2; text-align: left;
     }
 
+    /* VAR Replay controls */
+    .var-ctrl-btn {
+      padding: 8px 4px; background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12); border-radius: 7px;
+      color: #fff; font-family: 'Rajdhani', sans-serif;
+      font-size: 13px; font-weight: 700; letter-spacing: .05em;
+      cursor: pointer; text-align: center; line-height: 1.1;
+      transition: background .15s;
+    }
+    .var-ctrl-btn span { font-size: 9px; opacity: .55; display: block; }
+    .var-ctrl-btn:active { background: rgba(255,255,255,.14); }
+    .var-play-btn { background: rgba(255,107,0,.15); border-color: rgba(255,107,0,.4); color: #FF6B00; font-size: 18px; }
+    .var-play-btn.paused { background: rgba(255,215,0,.12); border-color: rgba(255,215,0,.4); color: #FFD700; }
+    .var-speed-btn.active { background: rgba(255,107,0,.18); border-color: rgba(255,107,0,.5); color: #FF6B00; }
+    #varLoadBtn:not([disabled]) { opacity: 1; cursor: pointer; }
+
     /* Tick verde sul pulsante carta */
     .card-play-item { position: relative; }
     .card-played-tick {
@@ -97,8 +113,21 @@
 <header class="admin-header">
   <img src="/logo.png" class="admin-logo" alt="Logo">
   <span class="admin-header-title">⚽ ADMIN</span>
-  <a href="/" target="_blank" class="display-link-btn">📺 Display</a>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="display-link-btn" onclick="showQrModal()" style="background:rgba(255,107,0,.12);border:1px solid rgba(255,107,0,.4);">📱 QR</button>
+    <a href="/" target="_blank" class="display-link-btn">📺 Display</a>
+  </div>
 </header>
+
+<!-- ── QR MODAL ───────────────────────────────────────── -->
+<div id="qrModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <div style="background:#141414;border:2px solid rgba(255,107,0,.5);border-radius:18px;padding:28px 32px;display:flex;flex-direction:column;align-items:center;gap:14px;max-width:90vw;">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:900;letter-spacing:.3em;color:var(--orange);">ADMIN QR CODE</div>
+    <canvas id="qrCanvas" style="border-radius:10px;background:#fff;padding:10px;"></canvas>
+    <div id="qrUrl" style="font-size:11px;color:#888;word-break:break-all;text-align:center;max-width:260px;"></div>
+    <button onclick="closeQrModal()" style="margin-top:4px;padding:10px 32px;background:rgba(255,107,0,.15);border:1px solid rgba(255,107,0,.5);border-radius:10px;color:var(--orange);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.1em;cursor:pointer;">CHIUDI</button>
+  </div>
+</div>
 
 <div class="conn-status">
   <div class="conn-dot" id="connDot"></div>
@@ -163,14 +192,117 @@
   </div>
 </div>
 
+<!-- ── VAR ────────────────────────────────────────────────── -->
+<div class="admin-section">
+  <div class="section-title">🔍 VAR</div>
+  <div class="section-body" id="varSection">
+    <!-- popolato da renderVar() in admin.js -->
+  </div>
+</div>
+
+<!-- ── VAR REPLAY ─────────────────────────────────────────── -->
+<div class="admin-section">
+  <div class="section-title">📹 VAR REPLAY</div>
+  <div class="section-body" style="display:flex;flex-direction:column;gap:10px;">
+
+    <!-- Percorso cartella OBS -->
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:.15em;">CARTELLA REPLAY OBS</div>
+      <div style="display:flex;gap:6px;">
+        <input id="varWatchPathInput" type="text" placeholder="Es: C:\Users\...\Videos\Replays"
+          style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:7px;padding:7px 10px;color:#fff;font-size:11px;font-family:'Rajdhani',sans-serif;min-width:0;">
+        <button onclick="varSaveWatchPath()"
+          style="padding:7px 12px;background:rgba(255,107,0,.15);border:1px solid rgba(255,107,0,.4);border-radius:7px;color:#FF6B00;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">
+          SALVA
+        </button>
+      </div>
+      <div id="varWatchPathStatus" style="font-size:10px;min-height:13px;"></div>
+    </div>
+
+    <hr style="border:none;border-top:1px solid rgba(255,255,255,.07);">
+
+    <!-- Notifica OBS clip caricato automaticamente -->
+    <div id="varClipNotif" style="display:none;">
+      <div style="background:rgba(255,215,0,.10);border:1px solid rgba(255,215,0,.35);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:16px;">📹</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;color:#FFD700;letter-spacing:.12em;">REPLAY OBS CARICATO</div>
+          <div id="varClipName" style="font-size:10px;color:rgba(255,215,0,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Caricamento manuale dal PC -->
+    <label style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;cursor:pointer;">
+      <span style="font-size:18px;">📂</span>
+      <div style="flex:1;">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.1em;">CARICA DAL PC</div>
+        <div id="varUploadStatus" style="font-size:10px;color:rgba(255,255,255,.3);">Seleziona un video da mostrare sul VAR</div>
+      </div>
+      <input type="file" accept="video/*" style="display:none" onchange="varAdminUpload(this)">
+    </label>
+
+    <!-- Preview video -->
+    <video id="varAdminPreview" muted playsinline
+      style="width:100%;border-radius:8px;background:#111;display:none;max-height:155px;object-fit:contain;border:1px solid rgba(255,255,255,.08);">
+    </video>
+
+    <!-- Controlli (visibili dopo caricamento) -->
+    <div id="varReplayControls" style="display:none;flex-direction:column;gap:8px;">
+
+      <!-- Seek + play/pause -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:5px;">
+        <button class="var-ctrl-btn" onclick="varCtrl('seek',-10)">⏮<br><span>-10s</span></button>
+        <button class="var-ctrl-btn" onclick="varCtrl('seek',-3)">◀◀<br><span>-3s</span></button>
+        <button class="var-ctrl-btn var-play-btn" id="varPlayPauseBtn" onclick="varAdminTogglePlay()">▶</button>
+        <button class="var-ctrl-btn" onclick="varCtrl('seek',3)">▶▶<br><span>+3s</span></button>
+        <button class="var-ctrl-btn" onclick="varCtrl('seek',10)">⏭<br><span>+10s</span></button>
+      </div>
+
+      <!-- Velocità -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;">
+        <button class="var-ctrl-btn var-speed-btn" onclick="varCtrl('speed',0.25)">×¼</button>
+        <button class="var-ctrl-btn var-speed-btn" onclick="varCtrl('speed',0.5)">×½</button>
+        <button class="var-ctrl-btn var-speed-btn active" onclick="varCtrl('speed',1)">×1</button>
+        <button class="var-ctrl-btn var-speed-btn" onclick="varCtrl('speed',1.5)">×1.5</button>
+        <button class="var-ctrl-btn var-speed-btn" onclick="varCtrl('speed',2)">×2</button>
+      </div>
+
+      <!-- Zoom -->
+      <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:5px;">
+        <button class="var-ctrl-btn" onclick="varCtrl('zoom',-0.25)">🔍−</button>
+        <button class="var-ctrl-btn" onclick="varCtrl('zoom',0)" style="font-size:10px;">RESET ZOOM</button>
+        <button class="var-ctrl-btn" onclick="varCtrl('zoom',0.25)">🔍+</button>
+      </div>
+
+      <!-- Chiudi -->
+      <button onclick="varAdminClose()"
+        style="width:100%;padding:10px;background:rgba(229,27,27,.12);border:1px solid rgba(229,27,27,.4);border-radius:8px;color:#E51B1B;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:.15em;cursor:pointer;">
+        ✕ CHIUDI VAR
+      </button>
+    </div>
+
+  </div>
+</div>
+
 <!-- ── RIGORE PRESIDENZIALE ───────────────────────────────── -->
 <div class="admin-section">
   <div class="section-title">⚽ RIGORE PRESIDENZIALE</div>
-  <div class="section-body">
-    <button class="rigore-section-btn" onclick="playRigorePres()">
-      <img src="/carte/rigore%20presidenziale(4)_senza_sfondo.png" alt="Rigore">
-      <span>RIGORE<br>PRESIDENZIALE</span>
-    </button>
+  <div class="section-body" style="display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="rigore-section-btn" onclick="playRigorePres('a')" style="flex:1">
+        <img src="/carte/rigore%20presidenziale(4)_senza_sfondo.png" alt="Rigore">
+        <span id="rigoreTeamA">RIGORE A<br><small style="font-size:12px;opacity:.7">Squadra A</small></span>
+      </button>
+      <button onclick="resetRigorePres('a')" style="padding:8px 12px;background:rgba(229,27,27,.15);border:1px solid rgba(229,27,27,.4);border-radius:8px;color:#E51B1B;font-size:11px;font-weight:700;letter-spacing:.1em;cursor:pointer;">RESET</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="rigore-section-btn" onclick="playRigorePres('b')" style="flex:1">
+        <img src="/carte/rigore%20presidenziale(4)_senza_sfondo.png" alt="Rigore">
+        <span id="rigoreTeamB">RIGORE B<br><small style="font-size:12px;opacity:.7">Squadra B</small></span>
+      </button>
+      <button onclick="resetRigorePres('b')" style="padding:8px 12px;background:rgba(229,27,27,.15);border:1px solid rgba(229,27,27,.4);border-radius:8px;color:#E51B1B;font-size:11px;font-weight:700;letter-spacing:.1em;cursor:pointer;">RESET</button>
+    </div>
   </div>
 </div>
 
@@ -395,8 +527,21 @@
 
 <!-- ── SCRIPTS ────────────────────────────────────────────── -->
 <script src="/socket.io/socket.io.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script src="/js/shared.js"></script>
 <script src="/js/admin.js"></script>
+<script>
+  function showQrModal() {
+    const url = window.location.href;
+    document.getElementById('qrUrl').textContent = url;
+    QRCode.toCanvas(document.getElementById('qrCanvas'), url, { width: 240, margin: 1, color: { dark: '#111', light: '#fff' } });
+    const m = document.getElementById('qrModal');
+    m.style.display = 'flex';
+  }
+  function closeQrModal() {
+    document.getElementById('qrModal').style.display = 'none';
+  }
+</script>
 <script>
   function toggleSettingsDrawer() {
     const drawer = document.getElementById('settingsDrawer');
@@ -417,6 +562,12 @@
     setField('set_golx2',       st.golX2Duration,       60);
     setField('set_yellow',      st.yellowCardDuration,  60);
     setField('set_red',         st.redCardDuration,     60);
+    // Aggiorna nomi squadra sui pulsanti rigore
+    const na = s.teams.a.name; const nb = s.teams.b.name;
+    const ra = document.getElementById('rigoreTeamA');
+    const rb = document.getElementById('rigoreTeamB');
+    if (ra) ra.innerHTML = `RIGORE A<br><small style="font-size:12px;opacity:.7">${na}</small>`;
+    if (rb) rb.innerHTML = `RIGORE B<br><small style="font-size:12px;opacity:.7">${nb}</small>`;
   });
 </script>
 

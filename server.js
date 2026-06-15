@@ -15,13 +15,83 @@ const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 const publicDir = path.join(__dirname, 'public');
 if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
+const replaysDir = path.join(publicDir, 'replays');
+if (!fs.existsSync(replaysDir)) fs.mkdirSync(replaysDir, { recursive: true });
 
 app.use(express.json());
 app.use(express.static(publicDir));
 app.use('/carte', express.static(path.join(__dirname, 'carte')));
 app.use('/uploads', express.static(uploadsDir));
 app.get('/logo.png', (req, res) => res.sendFile(path.join(__dirname, 'logo (2).png')));
-app.get('/admin', (req, res) => res.sendFile(path.join(publicDir, 'admin.html')));
+app.get('/admin',   (req, res) => res.sendFile(path.join(publicDir, 'admin.html')));
+app.get('/overlay', (req, res) => res.sendFile(path.join(publicDir, 'overlay.html')));
+app.get('/var',     (req, res) => res.sendFile(path.join(publicDir, 'var.html')));
+
+// Serve clip da percorso arbitrario (cartella OBS esterna)
+app.get('/var-clip/:filename', (req, res) => {
+  const filePath = path.join(currentWatchPath, req.params.filename);
+  if (!fs.existsSync(filePath)) return res.status(404).end();
+  res.sendFile(filePath);
+});
+
+// ─── REPLAY CONFIG ────────────────────────────────────────────────────────────
+const varConfigFile = path.join(__dirname, 'var_config.json');
+function readVarConfig() {
+  try { if (fs.existsSync(varConfigFile)) return JSON.parse(fs.readFileSync(varConfigFile, 'utf8')); } catch(e) {}
+  return { watchPath: '' };
+}
+function saveVarConfig(cfg) {
+  fs.writeFileSync(varConfigFile, JSON.stringify(cfg, null, 2));
+}
+
+let varConfig = readVarConfig();
+let currentWatchPath = varConfig.watchPath && fs.existsSync(varConfig.watchPath)
+  ? varConfig.watchPath : replaysDir;
+
+// API per aggiornare il percorso
+app.post('/api/var-watch-path', (req, res) => {
+  const { watchPath } = req.body;
+  if (!watchPath || !fs.existsSync(watchPath)) {
+    return res.status(400).json({ error: 'Percorso non valido o non trovato' });
+  }
+  varConfig.watchPath = watchPath;
+  saveVarConfig(varConfig);
+  startWatcher(watchPath);
+  res.json({ ok: true, watchPath });
+});
+
+app.get('/api/var-watch-path', (req, res) => {
+  res.json({ watchPath: currentWatchPath });
+});
+
+// ─── REPLAY FILE WATCHER ───────────────────────────────────────────────────────
+let lastNotifiedClip = null;
+let watchDebounce    = null;
+let activeWatcher    = null;
+
+function startWatcher(watchPath) {
+  if (activeWatcher) { try { activeWatcher.close(); } catch(e) {} }
+  if (!fs.existsSync(watchPath)) return;
+  currentWatchPath = watchPath;
+  lastNotifiedClip = null;
+  activeWatcher = fs.watch(watchPath, (eventType, filename) => {
+    if (!filename || !/\.(mp4|mov|mkv|avi|webm)$/i.test(filename)) return;
+    clearTimeout(watchDebounce);
+    watchDebounce = setTimeout(() => {
+      const full = path.join(watchPath, filename);
+      if (!fs.existsSync(full) || filename === lastNotifiedClip) return;
+      lastNotifiedClip = filename;
+      const isExternal = watchPath !== replaysDir;
+      const url = isExternal
+        ? `/var-clip/${encodeURIComponent(filename)}`
+        : `/replays/${encodeURIComponent(filename)}`;
+      io.emit('varClipReady', { filename, url, watchPath });
+      io.emit('varLoad', { url, filename });
+    }, 800);
+  });
+}
+
+startWatcher(currentWatchPath);
 
 const storage = multer.diskStorage({
   destination: uploadsDir,
@@ -103,7 +173,10 @@ function makeState() {
       b: { name: 'Squadra B', logo: null, goals: 0, players: [], disciplineCards: [], goalVideoUrl: null },
     },
     activeCards: [],
-    rigorePres: { videoUrl: null },
+    goalLog: [],
+    consumedCards: [],
+    rigorePres: { videoUrl: null, playedA: false, playedB: false },
+    var: { usedA: false, usedB: false, active: false, resultA: null, resultB: null },
     // Custom transition videos per phase pair
     transitionVideos: {
       'pre_1tempo': null, '1tempo_momentodado': null,
@@ -150,24 +223,33 @@ function phaseDuration(phase) {
 // ─── TIMER ─────────────────────────────────────────────────────────────────────
 
 let timerTick = null;
+let timerStartMs = null;
+let timerStartValue = 0;
 
 function startTimer() {
   if (timerTick) return;
   state.timer.running = true;
+  timerStartMs = Date.now();
+  timerStartValue = state.timer.value;
   timerTick = setInterval(() => {
-    state.timer.value++;
+    const prev = state.timer.value;
+    const elapsed = Math.floor((Date.now() - timerStartMs) / 1000);
+    state.timer.value = timerStartValue + elapsed;
+    const delta = state.timer.value - prev;
+    if (delta <= 0) return;
 
     // player-entry alerts at min 1, 2, 3
-    if (['1tempo', '2tempo'].includes(state.phase) &&
-        state.timer.value <= 180 && state.timer.value % 60 === 0) {
-      io.emit('playerEntryAlert', { minute: state.timer.value / 60 });
+    for (let s = prev + 1; s <= state.timer.value; s++) {
+      if (['1tempo', '2tempo'].includes(state.phase) && s <= 180 && s % 60 === 0) {
+        io.emit('playerEntryAlert', { minute: s / 60 });
+      }
     }
 
     // tick special-card countdowns (only for cards with a timer; permanent cards skip)
     let cardChanged = false;
     state.activeCards = state.activeCards.map(c => {
       if (!c.expired && c.totalDuration > 0 && c.timeLeft > 0) {
-        c.timeLeft--;
+        c.timeLeft = Math.max(0, c.timeLeft - delta);
         if (c.timeLeft === 0) { c.expired = true; cardChanged = true; }
       }
       return c;
@@ -176,7 +258,7 @@ function startTimer() {
     // discipline cards auto-remove when expired
     ['a', 'b'].forEach(t => {
       state.teams[t].disciplineCards = state.teams[t].disciplineCards
-        .map(c => { if (c.timeLeft > 0) c.timeLeft--; return c; })
+        .map(c => { if (c.timeLeft > 0) c.timeLeft = Math.max(0, c.timeLeft - delta); return c; })
         .filter(c => c.timeLeft > 0);
     });
 
@@ -201,6 +283,7 @@ function stopTimer() {
   clearInterval(timerTick);
   timerTick = null;
   state.timer.running = false;
+  timerStartMs = null;
 }
 
 // ─── ACTIONS ───────────────────────────────────────────────────────────────────
@@ -227,17 +310,32 @@ function handle(action) {
     case 'TIMER_RESET': {
       stopTimer();
       state.timer.value = 0;
+      timerStartValue = 0;
       break;
     }
 
     case 'TIMER_SET': {
       state.timer.value = action.value;
+      if (state.timer.running) {
+        timerStartMs = Date.now();
+        timerStartValue = action.value;
+      }
       break;
     }
 
     case 'ADD_GOAL': {
       const { team, amount, playerName } = action;
       state.teams[team].goals = Math.max(0, state.teams[team].goals + amount);
+      if (amount > 0) {
+        state.goalLog.push({
+          team,
+          playerName: playerName || null,
+          timerValue: state.timer.value,
+          phase: state.phase,
+          scoreA: state.teams.a.goals,
+          scoreB: state.teams.b.goals,
+        });
+      }
       let playerVideoUrl = null;
       if (playerName) {
         const player = (state.teams[team].players || []).find(p =>
@@ -284,8 +382,46 @@ function handle(action) {
       break;
     }
 
+    case 'VAR_CALL': {
+      if (action.team === 'a') state.var.usedA = true;
+      if (action.team === 'b') state.var.usedB = true;
+      state.var.active = true;
+      io.emit('varCall', { team: action.team });
+      break;
+    }
+
+    case 'VAR_RESULT': {
+      state.var.active = false;
+      if (action.team === 'a') state.var.resultA = action.result;
+      if (action.team === 'b') state.var.resultB = action.result;
+      io.emit('varResult', { result: action.result, team: action.team });
+      break;
+    }
+
+    case 'RESET_RIGORE_PRES': {
+      if (action.team === 'a') state.rigorePres.playedA = false;
+      if (action.team === 'b') state.rigorePres.playedB = false;
+      io.emit('state', state);
+      break;
+    }
+
+    case 'VAR_LOAD': {
+      io.emit('varLoad', { url: action.url, filename: action.filename });
+      return;
+    }
+    case 'VAR_CONTROL': {
+      io.emit('varControl', { ctrl: action.ctrl, value: action.value });
+      return;
+    }
+    case 'VAR_CLOSE': {
+      io.emit('varClose');
+      return;
+    }
+
     case 'PLAY_RIGORE_PRES': {
-      io.emit('animation', { type: 'rigorePres', videoUrl: state.rigorePres?.videoUrl || null });
+      if (action.team === 'a') state.rigorePres.playedA = true;
+      if (action.team === 'b') state.rigorePres.playedB = true;
+      io.emit('animation', { type: 'rigorePres', team: action.team, videoUrl: state.rigorePres?.videoUrl || null });
       break;
     }
 
@@ -323,6 +459,10 @@ function handle(action) {
     }
 
     case 'REMOVE_CARD': {
+      const removing = state.activeCards.find(c => c.id === action.id);
+      if (removing && removing.totalDuration === 0) {
+        state.consumedCards.push({ ...removing, consumed: true });
+      }
       state.activeCards = state.activeCards.filter(c => c.id !== action.id);
       break;
     }
