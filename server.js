@@ -10,8 +10,9 @@ const app = express();
 const httpServer = http.createServer(app);
 const io = new Server(httpServer);
 const PORT = process.env.PORT || 3000;
+const DATA_DIR = process.env.DATA_DIR || __dirname;
 
-const uploadsDir = path.join(__dirname, 'uploads');
+const uploadsDir = path.join(DATA_DIR, 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 const publicDir = path.join(__dirname, 'public');
 if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir, { recursive: true });
@@ -108,7 +109,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
 });
 
 // ─── TEAM STATE PERSISTENCE ────────────────────────────────────────────────────
-const teamsStateFile = path.join(__dirname, 'teams_state.json');
+const teamsStateFile = path.join(DATA_DIR, 'teams_state.json');
 
 function readTeamsState() {
   try { if (fs.existsSync(teamsStateFile)) return JSON.parse(fs.readFileSync(teamsStateFile, 'utf8')); }
@@ -125,7 +126,7 @@ function saveTeamsState() {
 }
 
 // ─── TEAM PRESETS (saved to disk) ──────────────────────────────────────────────
-const presetsFile = path.join(__dirname, 'team_presets.json');
+const presetsFile = path.join(DATA_DIR, 'team_presets.json');
 
 function readPresets() {
   try { if (fs.existsSync(presetsFile)) return JSON.parse(fs.readFileSync(presetsFile, 'utf8')); }
