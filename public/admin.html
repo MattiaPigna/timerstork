@@ -82,32 +82,9 @@
     }
     .player-vid-btn.has-vid { border-color: var(--green); background: rgba(0,197,110,.12); }
     .player-vid-btn:active { background: rgba(255,107,0,.2); }
-
-    /* ── SETTINGS DRAWER ─────────────────────────────────── */
-    .settings-drawer-btn {
-      display: flex; align-items: center; justify-content: space-between;
-      width: 100%; margin: 8px 0 4px;
-      padding: 16px 18px;
-      background: linear-gradient(135deg, rgba(255,107,0,.15), rgba(255,107,0,.08));
-      border: 2px solid rgba(255,107,0,.5);
-      border-radius: 14px;
-      color: var(--orange);
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 18px; font-weight: 900; letter-spacing: .06em;
-      cursor: pointer; transition: all .2s;
-    }
-    .settings-drawer-btn:active { background: rgba(255,107,0,.25); transform: scale(.98); }
-    .drawer-arrow { font-size: 14px; transition: transform .3s ease; }
-    .drawer-arrow.open { transform: rotate(180deg); }
-
-    .settings-drawer {
-      max-height: 0; overflow: hidden;
-      transition: max-height .4s cubic-bezier(.4,0,.2,1);
-    }
-    .settings-drawer.open { max-height: 9999px; }
   </style>
 </head>
-<body>
+<body data-tab="partita">
 
 <!-- ── HEADER ──────────────────────────────────────────── -->
 <header class="admin-header">
@@ -134,8 +111,12 @@
   <span id="connText">Connessione…</span>
 </div>
 
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: PARTITA                                          -->
+<!-- ══════════════════════════════════════════════════════ -->
+
 <!-- ── FASE ──────────────────────────────────────────────── -->
-<div class="admin-section">
+<div class="admin-section" data-tab="partita">
   <div class="section-title">FASE DI GIOCO</div>
   <div class="section-body">
     <div class="phase-buttons">
@@ -150,7 +131,7 @@
 </div>
 
 <!-- ── TIMER ─────────────────────────────────────────────── -->
-<div class="admin-section">
+<div class="admin-section" data-tab="partita">
   <div class="section-title">TIMER</div>
   <div class="timer-admin-display" id="adminTimerDisplay">00:00</div>
   <div class="timer-controls">
@@ -166,7 +147,7 @@
 </div>
 
 <!-- ── GOL ───────────────────────────────────────────────── -->
-<div class="admin-section">
+<div class="admin-section" data-tab="partita">
   <div class="section-title">GOL</div>
   <div class="section-body">
     <div class="goals-grid">
@@ -192,8 +173,95 @@
   </div>
 </div>
 
+<!-- ── ATTIVI ─────────────────────────────────────────────── -->
+<div class="admin-section" data-tab="partita">
+  <div class="section-title">ATTIVI (carte + cartellini)</div>
+  <div class="section-body">
+    <div class="active-list" id="activeList">
+      <div class="empty-state">Nessun elemento attivo</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: CARTE                                            -->
+<!-- ══════════════════════════════════════════════════════ -->
+
+<!-- ── RIGORE PRESIDENZIALE ───────────────────────────────── -->
+<div class="admin-section" data-tab="carte">
+  <div class="section-title">⚽ RIGORE PRESIDENZIALE</div>
+  <div class="section-body" style="display:flex;flex-direction:column;gap:10px;">
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="rigore-section-btn" onclick="playRigorePres('a')" style="flex:1">
+        <img src="/carte/rigore%20presidenziale(4)_senza_sfondo.png" alt="Rigore">
+        <span id="rigoreTeamA">RIGORE A<br><small style="font-size:12px;opacity:.7">Squadra A</small></span>
+      </button>
+      <button onclick="resetRigorePres('a')" style="padding:8px 12px;background:rgba(229,27,27,.15);border:1px solid rgba(229,27,27,.4);border-radius:8px;color:#E51B1B;font-size:11px;font-weight:700;letter-spacing:.1em;cursor:pointer;">RESET</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="rigore-section-btn" onclick="playRigorePres('b')" style="flex:1">
+        <img src="/carte/rigore%20presidenziale(4)_senza_sfondo.png" alt="Rigore">
+        <span id="rigoreTeamB">RIGORE B<br><small style="font-size:12px;opacity:.7">Squadra B</small></span>
+      </button>
+      <button onclick="resetRigorePres('b')" style="padding:8px 12px;background:rgba(229,27,27,.15);border:1px solid rgba(229,27,27,.4);border-radius:8px;color:#E51B1B;font-size:11px;font-weight:700;letter-spacing:.1em;cursor:pointer;">RESET</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CARTE SPECIALI ─────────────────────────────────────── -->
+<div class="admin-section" data-tab="carte">
+  <div class="section-title">CARTE SPECIALI</div>
+  <div class="section-body">
+    <div class="cards-grid" id="cardsGrid"></div>
+  </div>
+</div>
+
+<!-- ── CARTELLINI ─────────────────────────────────────────── -->
+<div class="admin-section" data-tab="carte">
+  <div class="section-title">CARTELLINI</div>
+  <div class="section-body" style="display:flex;flex-direction:column;gap:14px;">
+
+    <div>
+      <div class="section-title" style="border-radius:6px;margin-bottom:8px;font-size:10px;">SQUADRA A</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;">
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;color:#888;">Giocatore</label>
+          <select class="player-select" id="playerSelAyellow"></select>
+          <button class="disc-btn yellow" onclick="playDiscipline('a','yellow')">🟡 GIALLO</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;color:#888;">Giocatore</label>
+          <select class="player-select" id="playerSelAred"></select>
+          <button class="disc-btn red" onclick="playDiscipline('a','red')">🔴 ROSSO</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title" style="border-radius:6px;margin-bottom:8px;font-size:10px;">SQUADRA B</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;">
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;color:#888;">Giocatore</label>
+          <select class="player-select" id="playerSelByellow"></select>
+          <button class="disc-btn yellow" onclick="playDiscipline('b','yellow')">🟡 GIALLO</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <label style="font-size:11px;color:#888;">Giocatore</label>
+          <select class="player-select" id="playerSelBred"></select>
+          <button class="disc-btn red" onclick="playDiscipline('b','red')">🔴 ROSSO</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: VAR                                              -->
+<!-- ══════════════════════════════════════════════════════ -->
+
 <!-- ── VAR ────────────────────────────────────────────────── -->
-<div class="admin-section">
+<div class="admin-section" data-tab="var">
   <div class="section-title">🔍 VAR</div>
   <div class="section-body" id="varSection">
     <!-- popolato da renderVar() in admin.js -->
@@ -201,7 +269,7 @@
 </div>
 
 <!-- ── VAR REPLAY ─────────────────────────────────────────── -->
-<div class="admin-section">
+<div class="admin-section" data-tab="var">
   <div class="section-title">📹 VAR REPLAY</div>
   <div class="section-body" style="display:flex;flex-direction:column;gap:10px;">
 
@@ -285,96 +353,12 @@
   </div>
 </div>
 
-<!-- ── RIGORE PRESIDENZIALE ───────────────────────────────── -->
-<div class="admin-section">
-  <div class="section-title">⚽ RIGORE PRESIDENZIALE</div>
-  <div class="section-body" style="display:flex;flex-direction:column;gap:10px;">
-    <div style="display:flex;gap:8px;align-items:center;">
-      <button class="rigore-section-btn" onclick="playRigorePres('a')" style="flex:1">
-        <img src="/carte/rigore%20presidenziale(4)_senza_sfondo.png" alt="Rigore">
-        <span id="rigoreTeamA">RIGORE A<br><small style="font-size:12px;opacity:.7">Squadra A</small></span>
-      </button>
-      <button onclick="resetRigorePres('a')" style="padding:8px 12px;background:rgba(229,27,27,.15);border:1px solid rgba(229,27,27,.4);border-radius:8px;color:#E51B1B;font-size:11px;font-weight:700;letter-spacing:.1em;cursor:pointer;">RESET</button>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <button class="rigore-section-btn" onclick="playRigorePres('b')" style="flex:1">
-        <img src="/carte/rigore%20presidenziale(4)_senza_sfondo.png" alt="Rigore">
-        <span id="rigoreTeamB">RIGORE B<br><small style="font-size:12px;opacity:.7">Squadra B</small></span>
-      </button>
-      <button onclick="resetRigorePres('b')" style="padding:8px 12px;background:rgba(229,27,27,.15);border:1px solid rgba(229,27,27,.4);border-radius:8px;color:#E51B1B;font-size:11px;font-weight:700;letter-spacing:.1em;cursor:pointer;">RESET</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── CARTE SPECIALI ─────────────────────────────────────── -->
-<div class="admin-section">
-  <div class="section-title">CARTE SPECIALI</div>
-  <div class="section-body">
-    <div class="cards-grid" id="cardsGrid"></div>
-  </div>
-</div>
-
-<!-- ── CARTELLINI ─────────────────────────────────────────── -->
-<div class="admin-section">
-  <div class="section-title">CARTELLINI</div>
-  <div class="section-body" style="display:flex;flex-direction:column;gap:14px;">
-
-    <div>
-      <div class="section-title" style="border-radius:6px;margin-bottom:8px;font-size:10px;">SQUADRA A</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;">
-        <div style="display:flex;flex-direction:column;gap:5px;">
-          <label style="font-size:11px;color:#888;">Giocatore</label>
-          <select class="player-select" id="playerSelAyellow"></select>
-          <button class="disc-btn yellow" onclick="playDiscipline('a','yellow')">🟡 GIALLO</button>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:5px;">
-          <label style="font-size:11px;color:#888;">Giocatore</label>
-          <select class="player-select" id="playerSelAred"></select>
-          <button class="disc-btn red" onclick="playDiscipline('a','red')">🔴 ROSSO</button>
-        </div>
-      </div>
-    </div>
-
-    <div>
-      <div class="section-title" style="border-radius:6px;margin-bottom:8px;font-size:10px;">SQUADRA B</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;">
-        <div style="display:flex;flex-direction:column;gap:5px;">
-          <label style="font-size:11px;color:#888;">Giocatore</label>
-          <select class="player-select" id="playerSelByellow"></select>
-          <button class="disc-btn yellow" onclick="playDiscipline('b','yellow')">🟡 GIALLO</button>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:5px;">
-          <label style="font-size:11px;color:#888;">Giocatore</label>
-          <select class="player-select" id="playerSelBred"></select>
-          <button class="disc-btn red" onclick="playDiscipline('b','red')">🔴 ROSSO</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ── ATTIVI ─────────────────────────────────────────────── -->
-<div class="admin-section">
-  <div class="section-title">ATTIVI (carte + cartellini)</div>
-  <div class="section-body">
-    <div class="active-list" id="activeList">
-      <div class="empty-state">Nessun elemento attivo</div>
-    </div>
-  </div>
-</div>
-
-<!-- ── TASTO IMPOSTAZIONI ─────────────────────────────────── -->
-<button class="settings-drawer-btn" onclick="toggleSettingsDrawer()">
-  ⚙️ IMPOSTAZIONI &amp; SQUADRE
-  <span class="drawer-arrow" id="drawerArrow">▼</span>
-</button>
-
-<!-- ── DRAWER IMPOSTAZIONI ───────────────────────────────── -->
-<div class="settings-drawer" id="settingsDrawer">
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TAB: SETUP                                            -->
+<!-- ══════════════════════════════════════════════════════ -->
 
   <!-- SQUADRE SALVATE -->
-  <div class="admin-section">
+  <div class="admin-section" data-tab="setup">
     <div class="section-title">📋 SQUADRE SALVATE</div>
     <div class="section-body" id="presetsSection">
       <div class="preset-selector-row">
@@ -395,7 +379,7 @@
   </div>
 
   <!-- GESTIONE SQUADRE -->
-  <div class="admin-section">
+  <div class="admin-section" data-tab="setup">
     <div class="section-title">GESTIONE SQUADRE</div>
     <div class="section-body" style="display:flex;flex-direction:column;gap:14px;">
       <div class="team-mgmt-grid">
@@ -458,7 +442,7 @@
   </div>
 
   <!-- IMPOSTAZIONI TEMPI -->
-  <div class="admin-section">
+  <div class="admin-section" data-tab="setup">
     <div class="section-title">⏱ IMPOSTAZIONI TEMPI</div>
     <div class="section-body">
       <div class="settings-grid">
@@ -476,7 +460,7 @@
   </div>
 
   <!-- VIDEO TRANSIZIONI -->
-  <div class="admin-section">
+  <div class="admin-section" data-tab="setup">
     <div class="section-title">🎬 VIDEO TRANSIZIONI FASE</div>
     <div class="section-body">
       <div id="transitionVideoList"></div>
@@ -484,7 +468,7 @@
   </div>
 
   <!-- SUONI -->
-  <div class="admin-section">
+  <div class="admin-section" data-tab="setup">
     <div class="section-title">🔊 SUONI PERSONALIZZATI</div>
     <div class="section-body">
       <div id="customSoundList"></div>
@@ -492,14 +476,12 @@
   </div>
 
   <!-- RESET -->
-  <div class="admin-section">
+  <div class="admin-section" data-tab="setup">
     <div class="section-title">RESET</div>
     <div class="reset-section">
       <button class="reset-btn" onclick="resetMatch()">🔄 RESET PARTITA</button>
     </div>
   </div>
-
-</div><!-- fine drawer -->
 
 <!-- ── GOAL PLAYER MODAL ─────────────────────────────────── -->
 <div class="card-team-modal" id="goalPlayerModal" onclick="if(event.target===this)closeGoalModal()">
@@ -525,50 +507,165 @@
   </div>
 </div>
 
+<!-- ── TAB BAR ────────────────────────────────────────────── -->
+<nav class="tab-bar">
+  <button class="tab-btn tab-active" data-tab="partita" onclick="switchTab('partita')">
+    <span class="tab-icon">⚽</span>
+    <span class="tab-label">Partita</span>
+  </button>
+  <button class="tab-btn" data-tab="carte" onclick="switchTab('carte')">
+    <span class="tab-icon">🃏</span>
+    <span class="tab-label">Carte</span>
+  </button>
+  <button class="tab-btn" data-tab="var" onclick="switchTab('var')">
+    <span class="tab-icon">🔍</span>
+    <span class="tab-label">VAR</span>
+  </button>
+  <button class="tab-btn" data-tab="setup" onclick="switchTab('setup')">
+    <span class="tab-icon">⚙️</span>
+    <span class="tab-label">Setup</span>
+  </button>
+</nav>
+
+<!-- ── PIN MODAL ───────────────────────────────────────────── -->
+<div id="pinModal" style="
+  display:none; position:fixed; inset:0; z-index:10000;
+  background:rgba(0,0,0,.93);
+  align-items:center; justify-content:center; flex-direction:column;
+">
+  <div style="
+    background:#141414; border:2px solid var(--orange);
+    border-radius:20px; padding:32px 28px; width:90vw; max-width:340px;
+    display:flex; flex-direction:column; align-items:center; gap:18px;
+    box-shadow:0 0 60px rgba(255,107,0,.2);
+  ">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.2em;color:var(--orange);">
+      ACCESSO ADMIN
+    </div>
+    <div style="font-size:13px;color:#888;text-align:center;">
+      Inserisci il PIN per continuare
+    </div>
+    <input id="pinInput" type="password" inputmode="numeric" maxlength="12"
+      placeholder="● ● ● ●"
+      style="
+        width:100%;box-sizing:border-box;padding:14px;text-align:center;
+        background:#1a1a1a;border:2px solid #333;border-radius:12px;
+        color:#fff;font-family:'Rajdhani',sans-serif;font-size:24px;
+        letter-spacing:.2em;outline:none;
+      "
+      onkeydown="if(event.key==='Enter')submitPin()">
+    <div id="pinError" style="color:#ff4444;font-size:13px;min-height:16px;text-align:center;"></div>
+    <button onclick="submitPin()" style="
+      width:100%;padding:14px;border-radius:12px;border:none;
+      background:var(--orange);color:#000;
+      font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;
+      letter-spacing:.1em;cursor:pointer;
+    ">ENTRA</button>
+  </div>
+</div>
+
 <!-- ── SCRIPTS ────────────────────────────────────────────── -->
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-<script src="/js/shared.js"></script>
-<script src="/js/admin.js"></script>
 <script>
   function showQrModal() {
     const url = window.location.href;
     document.getElementById('qrUrl').textContent = url;
     QRCode.toCanvas(document.getElementById('qrCanvas'), url, { width: 240, margin: 1, color: { dark: '#111', light: '#fff' } });
-    const m = document.getElementById('qrModal');
-    m.style.display = 'flex';
+    document.getElementById('qrModal').style.display = 'flex';
   }
   function closeQrModal() {
     document.getElementById('qrModal').style.display = 'none';
   }
-</script>
-<script>
-  function toggleSettingsDrawer() {
-    const drawer = document.getElementById('settingsDrawer');
-    const arrow  = document.getElementById('drawerArrow');
-    const open   = drawer.classList.toggle('open');
-    arrow.classList.toggle('open', open);
+
+  function switchTab(tab) {
+    document.body.dataset.tab = tab;
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.toggle('tab-active', b.dataset.tab === tab);
+    });
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
-  socket.on('state', s => {
-    const st = s.settings;
-    const setField = (id, val, div) => {
-      const el = document.getElementById(id);
-      if (el && document.activeElement !== el) el.value = Math.round(val / div);
+  // Carica shared.js → admin.js in sequenza dopo l'auth
+  function loadAdminScripts() {
+    const shared = document.createElement('script');
+    shared.src = '/js/shared.js';
+    shared.onload = () => {
+      const admin = document.createElement('script');
+      admin.src = '/js/admin.js';
+      admin.onload = () => { if (window.onAdminReady) window.onAdminReady(); };
+      document.body.appendChild(admin);
     };
-    setField('set_tempo1',      st.tempo1Duration,      60);
-    setField('set_momentodado', st.momentoDadoDuration, 60);
-    setField('set_tempo2',      st.tempo2Duration,      60);
-    setField('set_golx2',       st.golX2Duration,       60);
-    setField('set_yellow',      st.yellowCardDuration,  60);
-    setField('set_red',         st.redCardDuration,     60);
-    // Aggiorna nomi squadra sui pulsanti rigore
-    const na = s.teams.a.name; const nb = s.teams.b.name;
-    const ra = document.getElementById('rigoreTeamA');
-    const rb = document.getElementById('rigoreTeamB');
-    if (ra) ra.innerHTML = `RIGORE A<br><small style="font-size:12px;opacity:.7">${na}</small>`;
-    if (rb) rb.innerHTML = `RIGORE B<br><small style="font-size:12px;opacity:.7">${nb}</small>`;
-  });
+    document.body.appendChild(shared);
+  }
+
+  // Listener settings/rigore (attivato dopo auth)
+  window.onAdminReady = function() {
+    socket.on('state', s => {
+      const st = s.settings;
+      const setField = (id, val, div) => {
+        const el = document.getElementById(id);
+        if (el && document.activeElement !== el) el.value = Math.round(val / div);
+      };
+      setField('set_tempo1',      st.tempo1Duration,      60);
+      setField('set_momentodado', st.momentoDadoDuration, 60);
+      setField('set_tempo2',      st.tempo2Duration,      60);
+      setField('set_golx2',       st.golX2Duration,       60);
+      setField('set_yellow',      st.yellowCardDuration,  60);
+      setField('set_red',         st.redCardDuration,     60);
+      const na = s.teams.a.name; const nb = s.teams.b.name;
+      const ra = document.getElementById('rigoreTeamA');
+      const rb = document.getElementById('rigoreTeamB');
+      if (ra) ra.innerHTML = `RIGORE A<br><small style="font-size:12px;opacity:.7">${na}</small>`;
+      if (rb) rb.innerHTML = `RIGORE B<br><small style="font-size:12px;opacity:.7">${nb}</small>`;
+    });
+    socket.on('authError', () => {
+      sessionStorage.removeItem('adminToken');
+      window.ADMIN_TOKEN = null;
+      document.getElementById('pinError').textContent = 'Sessione scaduta. Reinserisci il PIN.';
+      document.getElementById('pinModal').style.display = 'flex';
+      document.getElementById('pinInput').focus();
+    });
+  };
+
+  // Auth all'avvio
+  (async function() {
+    try {
+      const { required } = await fetch('/api/admin-pin-required').then(r => r.json());
+      if (!required) { loadAdminScripts(); return; }
+      const saved = sessionStorage.getItem('adminToken');
+      if (saved) { window.ADMIN_TOKEN = saved; loadAdminScripts(); return; }
+      const modal = document.getElementById('pinModal');
+      modal.style.display = 'flex';
+      document.getElementById('pinInput').focus();
+    } catch(e) { loadAdminScripts(); }
+  })();
+
+  async function submitPin() {
+    const pin = document.getElementById('pinInput').value.trim();
+    if (!pin) return;
+    document.getElementById('pinError').textContent = '';
+    try {
+      const res = await fetch('/api/admin-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin })
+      });
+      if (res.ok) {
+        const { token } = await res.json();
+        sessionStorage.setItem('adminToken', token);
+        window.ADMIN_TOKEN = token;
+        document.getElementById('pinModal').style.display = 'none';
+        loadAdminScripts();
+      } else {
+        document.getElementById('pinError').textContent = 'PIN errato. Riprova.';
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinInput').focus();
+      }
+    } catch(e) {
+      document.getElementById('pinError').textContent = 'Errore di rete.';
+    }
+  }
 </script>
 
 </body>

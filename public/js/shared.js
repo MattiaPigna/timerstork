@@ -1,5 +1,5 @@
 // ─── SOCKET ──────────────────────────────────────────────────────────────────
-const socket = io();
+const socket = io(window.ADMIN_TOKEN ? { auth: { token: window.ADMIN_TOKEN } } : {});
 
 // ─── AUDIO ───────────────────────────────────────────────────────────────────
 let audioCtx = null;

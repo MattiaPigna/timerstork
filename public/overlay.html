@@ -128,8 +128,71 @@
 <!-- ── CARTELLINI DISCIPLINARI (lista persistente) ───────────── -->
 <div class="overlay-disc" id="overlayDisc"></div>
 
+<!-- ── FULLSCREEN GOL ────────────────────────────────────────── -->
+<div id="fsGoal" class="fs-overlay">
+  <div class="fs-goal-inner">
+    <div class="fs-gol-word">GOL!</div>
+    <div class="fs-goal-team"   id="fsGoalTeam"></div>
+    <div class="fs-goal-player" id="fsGoalPlayer"></div>
+    <div class="fs-goal-score"  id="fsGoalScore"></div>
+  </div>
+</div>
+
+<!-- ── FULLSCREEN VAR ────────────────────────────────────────── -->
+<div id="fsVar" class="fs-overlay">
+  <div class="fs-var-bar">
+    <span class="fs-var-icon">🔍</span>
+    <span class="fs-var-label">VAR</span>
+    <span class="fs-var-team" id="fsVarTeam"></span>
+    <span class="fs-var-status" id="fsVarStatus">IN CORSO…</span>
+  </div>
+  <iframe id="fsVarFrame" src="" class="fs-var-frame" allow="autoplay"></iframe>
+</div>
+
+<!-- ── ZOOM CONTROL (solo browser, non appare in OBS) ─────── -->
+<div id="zoomCtrl" style="
+  position:fixed; bottom:16px; right:16px; z-index:9999;
+  display:flex; align-items:center; gap:10px;
+  background:rgba(0,0,0,.75); border:1px solid rgba(255,107,0,.5);
+  border-radius:10px; padding:8px 14px;
+  font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:700;
+  opacity:0; transition:opacity .25s; pointer-events:none;
+">
+  <button onclick="changeZoom(-0.25)" style="background:none;border:none;color:#FF6B00;font-size:22px;cursor:pointer;line-height:1;padding:0 4px;">−</button>
+  <span id="zoomLabel" style="color:#fff;min-width:46px;text-align:center;">100%</span>
+  <button onclick="changeZoom(0.25)"  style="background:none;border:none;color:#FF6B00;font-size:22px;cursor:pointer;line-height:1;padding:0 4px;">+</button>
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script src="/js/shared.js"></script>
 <script src="/js/overlay.js"></script>
+<script>
+  let zoomLevel = parseFloat(localStorage.getItem('overlayZoom') || '1');
+  const zoomCtrl = document.getElementById('zoomCtrl');
+
+  function applyZoom() {
+    document.body.style.zoom = zoomLevel;
+    document.getElementById('zoomLabel').textContent = Math.round(zoomLevel * 100) + '%';
+    localStorage.setItem('overlayZoom', zoomLevel);
+  }
+  function changeZoom(delta) {
+    zoomLevel = Math.max(0.25, Math.min(4, parseFloat((zoomLevel + delta).toFixed(2))));
+    applyZoom();
+  }
+
+  // Mostra il controllo solo quando il mouse si muove
+  let hideTimer;
+  document.addEventListener('mousemove', () => {
+    zoomCtrl.style.opacity = '1';
+    zoomCtrl.style.pointerEvents = 'auto';
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => {
+      zoomCtrl.style.opacity = '0';
+      zoomCtrl.style.pointerEvents = 'none';
+    }, 2500);
+  });
+
+  applyZoom();
+</script>
 </body>
 </html>

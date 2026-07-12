@@ -218,7 +218,22 @@ function animateGoal(team, goals, playerName) {
     anim.classList.remove('active');
     document.getElementById('obGoalFlyTrack').innerHTML = '';
     document.getElementById('obGoalCenter').innerHTML = '';
+    showFsGoal(team, goals, playerName);
   }, 3800);
+}
+
+let fsGoalTimeout = null;
+function showFsGoal(team, goals, playerName) {
+  const teamName = team === 'a' ? state?.teams?.a?.name : state?.teams?.b?.name;
+  document.getElementById('fsGoalTeam').textContent   = teamName || '';
+  document.getElementById('fsGoalPlayer').textContent = playerName || '';
+  document.getElementById('fsGoalScore').textContent  = `${goals.a}  —  ${goals.b}`;
+  const el = document.getElementById('fsGoal');
+  el.classList.remove('active');
+  void el.offsetWidth;
+  el.classList.add('active');
+  clearTimeout(fsGoalTimeout);
+  fsGoalTimeout = setTimeout(() => el.classList.remove('active'), 5000);
 }
 
 // ─── CARTA SPECIALE — flip 3D sotto la barra ──────────────────
@@ -296,6 +311,23 @@ function animateVarCall(team) {
     <span class="ob-var-anim-status blink">IN CORSO…</span>`;
   el.classList.add('active');
   clearTimeout(varAnimTimeout);
+  // Dopo la transizione della barra, apri il fullscreen VAR
+  setTimeout(() => showFsVar(team), 800);
+}
+
+function showFsVar(team) {
+  const teamName = team === 'a' ? state?.teams?.a?.name : state?.teams?.b?.name;
+  document.getElementById('fsVarTeam').textContent = teamName || '';
+  const status = document.getElementById('fsVarStatus');
+  status.textContent = 'IN CORSO…';
+  status.className = 'fs-var-status blink';
+  document.getElementById('fsVarFrame').src = '/var';
+  document.getElementById('fsVar').classList.add('active');
+}
+
+function hideFsVar() {
+  document.getElementById('fsVar').classList.remove('active');
+  setTimeout(() => { document.getElementById('fsVarFrame').src = ''; }, 500);
 }
 
 // ─── VAR RISULTATO ────────────────────────────────────────────
@@ -306,8 +338,17 @@ function animateVarResult(result) {
     <span class="ob-var-anim-icon">${isConf ? '✅' : '❌'}</span>
     <span class="ob-var-anim-label" style="${isConf ? 'color:#00C56E;text-shadow:0 0 28px rgba(0,197,110,.7)' : 'color:#E51B1B;text-shadow:0 0 28px rgba(229,27,27,.7)'}">VAR</span>
     <span class="ob-var-anim-status ${isConf ? 'conf' : 'over'}">${isConf ? '✓ CONFERMATO' : '✗ RIBALTATO'}</span>`;
+  // Aggiorna anche il fullscreen
+  const fsStatus = document.getElementById('fsVarStatus');
+  if (fsStatus) {
+    fsStatus.textContent = isConf ? '✓ CONFERMATO' : '✗ RIBALTATO';
+    fsStatus.className   = `fs-var-status ${isConf ? 'conf' : 'over'}`;
+  }
   clearTimeout(varAnimTimeout);
-  varAnimTimeout = setTimeout(() => el.classList.remove('active'), 4000);
+  varAnimTimeout = setTimeout(() => {
+    el.classList.remove('active');
+    hideFsVar();
+  }, 4000);
 }
 
 // ─── CARTELLINO DISCIPLINARE ──────────────────────────────────

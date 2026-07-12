@@ -26,9 +26,45 @@ body {
   color: var(--white);
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
-  padding-bottom: 80px;
+  padding-bottom: 72px;
   overflow-x: hidden;
 }
+
+/* ── TAB VISIBILITY ──────────────────────────────────────── */
+.admin-section[data-tab] { display: none; }
+body[data-tab="partita"] .admin-section[data-tab="partita"] { display: block; }
+body[data-tab="carte"]   .admin-section[data-tab="carte"]   { display: block; }
+body[data-tab="var"]     .admin-section[data-tab="var"]     { display: block; }
+body[data-tab="setup"]   .admin-section[data-tab="setup"]   { display: block; }
+
+/* ── TAB BAR ─────────────────────────────────────────────── */
+.tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  background: var(--black);
+  border-top: 2px solid rgba(255,107,0,.25);
+  height: 62px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.tab-btn {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px;
+  background: none; border: none; cursor: pointer;
+  color: var(--gray2);
+  font-family: 'Inter', sans-serif;
+  transition: color .15s;
+  -webkit-tap-highlight-color: transparent;
+  padding: 8px 4px;
+  border-top: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+.tab-btn:active { opacity: .7; }
+.tab-btn.tab-active {
+  color: var(--orange);
+  border-top-color: var(--orange);
+}
+.tab-icon { font-size: 20px; line-height: 1; }
+.tab-label { font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
 
 /* ── HEADER ─────────────────────────────────────────── */
 .admin-header {

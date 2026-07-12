@@ -471,3 +471,80 @@ html, body {
 @keyframes obSlideDown { from{opacity:0;transform:translateX(-50%) translateY(-18px)} 60%{transform:translateX(-50%) translateY(4px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
 .ob-anim-disc.team-a { animation-name: obDiscSlide; }
 .ob-anim-disc.team-b { animation-name: obDiscSlide; }
+
+/* ══════════════════════════════════════════════════════════════
+   FULLSCREEN GOL & VAR
+   ══════════════════════════════════════════════════════════════ */
+.fs-overlay {
+  position: absolute; inset: 0; z-index: 60;
+  opacity: 0; pointer-events: none;
+  transition: opacity .45s ease;
+}
+.fs-overlay.active { opacity: 1; pointer-events: auto; }
+
+/* ── GOL ── */
+#fsGoal {
+  background: radial-gradient(ellipse at center, rgba(40,14,0,.97) 0%, rgba(0,0,0,.98) 100%);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.fs-goal-inner {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  position: relative; z-index: 2;
+}
+.fs-gol-word {
+  font-family: 'Bebas Neue', sans-serif; font-size: 380px; line-height: .85;
+  color: #FFD700;
+  text-shadow: 0 0 80px rgba(255,215,0,.9), 0 0 160px rgba(255,107,0,.6), 0 0 240px rgba(255,107,0,.3);
+  animation: fsGolPop .55s cubic-bezier(.17,.67,.4,1.35) both;
+}
+.fs-goal-team {
+  font-family: 'Bebas Neue', sans-serif; font-size: 90px; letter-spacing: .1em;
+  color: var(--white); text-shadow: 0 2px 20px rgba(0,0,0,.9);
+  animation: fsFadeUp .5s ease .2s both;
+}
+.fs-goal-player {
+  font-family: 'Rajdhani', sans-serif; font-size: 50px; font-weight: 700; letter-spacing: .18em;
+  color: var(--orange2); text-shadow: 0 0 20px rgba(255,107,0,.5);
+  animation: fsFadeUp .5s ease .35s both; min-height: 60px;
+}
+.fs-goal-score {
+  font-family: 'Bebas Neue', sans-serif; font-size: 70px; letter-spacing: .08em;
+  color: rgba(255,255,255,.45);
+  animation: fsFadeUp .5s ease .45s both;
+}
+
+/* ── VAR ── */
+#fsVar { background: rgba(0,0,0,.97); display: flex; flex-direction: column; }
+.fs-var-bar {
+  height: var(--bar-h); flex-shrink: 0;
+  display: flex; align-items: center; gap: 20px; padding: 0 40px;
+  background: rgba(6,6,6,.98);
+  border-bottom: 3px solid #FFD700;
+  box-shadow: 0 4px 40px rgba(255,215,0,.2);
+}
+.fs-var-icon { font-size: 28px; line-height: 1; }
+.fs-var-label {
+  font-family: 'Bebas Neue', sans-serif; font-size: 46px; letter-spacing: .25em;
+  color: #FFD700; text-shadow: 0 0 30px rgba(255,215,0,.7);
+}
+.fs-var-team {
+  font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700;
+  letter-spacing: .2em; color: rgba(255,255,255,.45); flex: 1;
+}
+.fs-var-status {
+  font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: .22em;
+}
+.fs-var-status.blink { color: #FFD700; animation: obVarBlink 1s ease-in-out infinite; }
+.fs-var-status.conf  { color: #00C56E; text-shadow: 0 0 20px rgba(0,197,110,.8); animation: none; }
+.fs-var-status.over  { color: #E51B1B; text-shadow: 0 0 20px rgba(229,27,27,.8); animation: none; }
+.fs-var-frame { flex: 1; width: 100%; border: none; background: transparent; }
+
+@keyframes fsGolPop {
+  0%   { transform: scale(.15) rotate(-4deg); opacity: 0; }
+  65%  { transform: scale(1.06) rotate(1deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+@keyframes fsFadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

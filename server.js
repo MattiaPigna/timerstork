@@ -5,12 +5,15 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const crypto = require('crypto');
 
 const app = express();
 const httpServer = http.createServer(app);
 const io = new Server(httpServer);
-const PORT = process.env.PORT || 3000;
-const DATA_DIR = process.env.DATA_DIR || __dirname;
+const PORT      = process.env.PORT || 3000;
+const DATA_DIR  = process.env.DATA_DIR || __dirname;
+const ADMIN_PIN = process.env.ADMIN_PIN || '';
+const adminTokens = new Set();
 
 const uploadsDir = path.join(DATA_DIR, 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
@@ -149,6 +152,59 @@ app.delete('/api/presets/:name', (req, res) => {
   res.json({ ok: true });
 });
 
+// ─── ADMIN AUTH ────────────────────────────────────────────────────────────────
+
+app.get('/api/admin-pin-required', (req, res) => {
+  res.json({ required: !!ADMIN_PIN });
+});
+
+app.post('/api/admin-auth', express.json(), (req, res) => {
+  if (!ADMIN_PIN) return res.json({ token: 'open' });
+  if (req.body?.pin !== ADMIN_PIN) return res.status(401).json({ error: 'PIN errato' });
+  const token = crypto.randomBytes(16).toString('hex');
+  adminTokens.add(token);
+  res.json({ token });
+});
+
+// ─── MATCH STATE PERSISTENCE ───────────────────────────────────────────────────
+
+const matchStateFile = path.join(DATA_DIR, 'match_state.json');
+
+function saveMatchState() {
+  try {
+    fs.writeFileSync(matchStateFile, JSON.stringify({
+      phase:          state.phase,
+      timer:          { value: state.timer.value, phaseDuration: state.timer.phaseDuration },
+      goals:          { a: state.teams.a.goals, b: state.teams.b.goals },
+      activeCards:    state.activeCards,
+      rigorePres:     state.rigorePres,
+      var:            state.var,
+      settings:       state.settings,
+      cardDefs:       state.cardDefs,
+      transitionVideos: state.transitionVideos,
+      sounds:         state.sounds,
+    }), 'utf8');
+  } catch(e) {}
+}
+
+function restoreMatchState() {
+  try {
+    if (!fs.existsSync(matchStateFile)) return;
+    const d = JSON.parse(fs.readFileSync(matchStateFile, 'utf8'));
+    if (d.phase)            state.phase = d.phase;
+    if (d.timer)            { state.timer.value = d.timer.value || 0; state.timer.phaseDuration = d.timer.phaseDuration || 0; }
+    if (d.goals)            { state.teams.a.goals = d.goals.a || 0; state.teams.b.goals = d.goals.b || 0; }
+    if (d.activeCards)      state.activeCards = d.activeCards;
+    if (d.rigorePres)       state.rigorePres = { ...state.rigorePres, ...d.rigorePres };
+    if (d.var)              state.var = { ...state.var, ...d.var, active: false };
+    if (d.settings)         state.settings = { ...state.settings, ...d.settings };
+    if (d.cardDefs)         state.cardDefs = d.cardDefs;
+    if (d.transitionVideos) state.transitionVideos = { ...state.transitionVideos, ...d.transitionVideos };
+    if (d.sounds)           state.sounds = { ...state.sounds, ...d.sounds };
+    console.log(`  ✅ Stato partita ripristinato (fase: ${state.phase}, ${state.teams.a.goals}-${state.teams.b.goals})`);
+  } catch(e) { console.warn('  ⚠ Impossibile ripristinare lo stato partita:', e.message); }
+}
+
 // ─── GAME STATE ────────────────────────────────────────────────────────────────
 
 // duration: 0  = permanent card (no countdown, stays until manually removed)
@@ -215,6 +271,8 @@ function migratePlayers(players) {
     if (saved.b) state.teams.b = { ...state.teams.b, ...saved.b, players: migratePlayers(saved.b.players), disciplineCards: [], goals: 0 };
   }
 }
+// Restore persisted match state (phase, timer, score, cards)
+restoreMatchState();
 
 function phaseDuration(phase) {
   const s = state.settings;
@@ -272,6 +330,9 @@ function startTimer() {
 
     if (cardChanged) io.emit('state', state);
 
+    // salva lo stato ogni 30 secondi
+    if (state.timer.value % 30 === 0) saveMatchState();
+
     // phase end when elapsed >= phaseDuration (only for phases with a duration)
     if (state.timer.phaseDuration > 0 && state.timer.value >= state.timer.phaseDuration) {
       stopTimer();
@@ -300,8 +361,8 @@ function handle(action) {
       state.timer.value = 0;
       state.timer.phaseDuration = dur;
       state.timer.running = false;
-      // Emit transition event BEFORE the state broadcast so display can animate
       io.emit('phaseChange', { from: fromPhase, to: action.phase });
+      saveMatchState();
       break;
     }
 
@@ -312,6 +373,7 @@ function handle(action) {
       stopTimer();
       state.timer.value = 0;
       timerStartValue = 0;
+      saveMatchState();
       break;
     }
 
@@ -351,6 +413,7 @@ function handle(action) {
         playerVideoUrl,
         videoUrl: state.teams[team].goalVideoUrl || null,
       });
+      saveMatchState();
       break;
     }
 
@@ -465,6 +528,7 @@ function handle(action) {
         state.consumedCards.push({ ...removing, consumed: true });
       }
       state.activeCards = state.activeCards.filter(c => c.id !== action.id);
+      saveMatchState();
       break;
     }
 
@@ -488,6 +552,7 @@ function handle(action) {
           if (def) def.duration = duration;
         });
       }
+      saveMatchState();
       break;
     }
 
@@ -511,6 +576,7 @@ function handle(action) {
       state.rigorePres       = savedRig;
       state.transitionVideos = savedTrans;
       state.sounds           = savedSounds;
+      try { if (fs.existsSync(matchStateFile)) fs.unlinkSync(matchStateFile); } catch(e) {}
       break;
     }
   }
@@ -522,7 +588,13 @@ function handle(action) {
 
 io.on('connection', socket => {
   socket.emit('state', state);
-  socket.on('action', action => handle(action));
+  socket.on('action', action => {
+    if (ADMIN_PIN && !adminTokens.has(socket.handshake.auth?.token)) {
+      socket.emit('authError', { message: 'Token non valido' });
+      return;
+    }
+    handle(action);
+  });
 });
 
 // ─── START ─────────────────────────────────────────────────────────────────────
