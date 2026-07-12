@@ -234,6 +234,7 @@ function makeState() {
     consumedCards: [],
     rigorePres: { videoUrl: null, playedA: false, playedB: false },
     var: { usedA: false, usedB: false, active: false, resultA: null, resultB: null },
+    varClip: null, // { url, filename } — ultima clip caricata sul VAR replay
     // Custom transition videos per phase pair
     transitionVideos: {
       'pre_1tempo': null, '1tempo_momentodado': null,
@@ -470,7 +471,8 @@ function handle(action) {
     }
 
     case 'VAR_LOAD': {
-      io.emit('varLoad', { url: action.url, filename: action.filename });
+      state.varClip = { url: action.url, filename: action.filename };
+      io.emit('varLoad', state.varClip);
       return;
     }
     case 'VAR_CONTROL': {
@@ -478,6 +480,7 @@ function handle(action) {
       return;
     }
     case 'VAR_CLOSE': {
+      state.varClip = null;
       io.emit('varClose');
       return;
     }
@@ -588,6 +591,7 @@ function handle(action) {
 
 io.on('connection', socket => {
   socket.emit('state', state);
+  if (state.varClip) socket.emit('varLoad', state.varClip);
   socket.on('action', action => {
     if (ADMIN_PIN && !adminTokens.has(socket.handshake.auth?.token)) {
       socket.emit('authError', { message: 'Token non valido' });
