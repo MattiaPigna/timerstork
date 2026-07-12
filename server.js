@@ -30,6 +30,7 @@ app.get('/logo.png', (req, res) => res.sendFile(path.join(__dirname, 'logo (2).p
 app.get('/admin',   (req, res) => res.sendFile(path.join(publicDir, 'admin.html')));
 app.get('/overlay', (req, res) => res.sendFile(path.join(publicDir, 'overlay.html')));
 app.get('/var',     (req, res) => res.sendFile(path.join(publicDir, 'var.html')));
+app.get('/varadmin', (req, res) => res.sendFile(path.join(publicDir, 'varadmin.html')));
 
 // Serve clip da percorso arbitrario (cartella OBS esterna)
 app.get('/var-clip/:filename', (req, res) => {
@@ -233,7 +234,7 @@ function makeState() {
     goalLog: [],
     consumedCards: [],
     rigorePres: { videoUrl: null, playedA: false, playedB: false },
-    var: { usedA: false, usedB: false, active: false, resultA: null, resultB: null },
+    var: { usedA: false, usedB: false, active: false, resultA: null, resultB: null, lastTeam: null },
     varClip: null, // { url, filename } — ultima clip caricata sul VAR replay
     // Custom transition videos per phase pair
     transitionVideos: {
@@ -451,6 +452,7 @@ function handle(action) {
       if (action.team === 'a') state.var.usedA = true;
       if (action.team === 'b') state.var.usedB = true;
       state.var.active = true;
+      state.var.lastTeam = action.team;
       io.emit('varCall', { team: action.team });
       break;
     }

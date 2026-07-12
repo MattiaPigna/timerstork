@@ -5,12 +5,6 @@ let pendingCardDef  = null;
 let pendingGoalTeam = null;
 let pendingGoalAmt  = null;
 
-// ─── VAR REPLAY STATE ─────────────────────────────────────────────────────────
-let varReadyClip   = null;  // { filename, url } — ultimo clip rilevato
-let varAdminPlaying = false;
-let varAdminZoom   = 1;
-const varPreview   = () => document.getElementById('varAdminPreview');
-
 // ─── SOCKET ───────────────────────────────────────────────────────────────────
 socket.on('connect', () => {
   document.getElementById('connDot').classList.add('connected');
@@ -38,50 +32,6 @@ socket.on('goalEvent', data => {
   renderGoals();
 });
 
-// Clip OBS pronto nella cartella /replays
-socket.on('varClipReady', data => {
-  varReadyClip = data;
-  const notif = document.getElementById('varClipNotif');
-  const name  = document.getElementById('varClipName');
-  const btn   = document.getElementById('varLoadBtn');
-  if (notif) { notif.style.display = 'flex'; }
-  if (name)  { name.textContent = data.filename; }
-  if (btn)   { btn.disabled = false; }
-});
-
-// Rispecchia i controlli anche sul preview locale
-socket.on('varLoad', data => {
-  const v = varPreview(); if (!v) return;
-  v.style.display = 'block';
-  v.preload = 'auto';
-  v.src = data.url; v.load();
-  v.play().catch(() => {});
-  varAdminPlaying = true; varUpdatePlayBtn();
-  const ctrl = document.getElementById('varReplayControls');
-  if (ctrl) { ctrl.style.display = 'flex'; }
-});
-socket.on('varControl', data => {
-  const v = varPreview(); if (!v) return;
-  const { ctrl, value } = data;
-  if (ctrl === 'play')  { v.play(); varAdminPlaying = true; }
-  if (ctrl === 'pause') { v.pause(); varAdminPlaying = false; }
-  if (ctrl === 'seek')  { v.currentTime = Math.max(0, v.currentTime + value); }
-  if (ctrl === 'speed') { v.playbackRate = value; varHighlightSpeed(value); }
-  if (ctrl === 'zoom')  {
-    varAdminZoom = value === 0 ? 1 : Math.max(1, Math.min(4, varAdminZoom + value));
-    v.style.transform = `scale(${varAdminZoom})`;
-  }
-  varUpdatePlayBtn();
-});
-socket.on('varClose', () => {
-  const v = varPreview(); if (!v) return;
-  v.pause(); v.src = ''; v.style.display = 'none';
-  varAdminPlaying = false; varAdminZoom = 1;
-  const ctrl = document.getElementById('varReplayControls');
-  if (ctrl) ctrl.style.display = 'none';
-  varUpdatePlayBtn();
-});
-
 // ─── ACTIONS ──────────────────────────────────────────────────────────────────
 function send(action) { socket.emit('action', action); }
 
@@ -97,97 +47,6 @@ function playRigorePres(team)  { send({ type: 'PLAY_RIGORE_PRES', team }); unloc
 function resetRigorePres(team) { send({ type: 'RESET_RIGORE_PRES', team }); }
 function callVar(team)         { send({ type: 'VAR_CALL', team }); }
 function varResult(result)     { send({ type: 'VAR_RESULT', result, team: state?.var?.lastTeam }); }
-
-// ─── VAR REPLAY CONTROLS ──────────────────────────────────────────────────────
-function varAdminLoad() {
-  if (!varReadyClip) return;
-  send({ type: 'VAR_LOAD', url: varReadyClip.url, filename: varReadyClip.filename });
-  varAdminZoom = 1;
-}
-
-async function varAdminUpload(input) {
-  const file = input.files[0]; if (!file) return;
-  const status = document.getElementById('varUploadStatus');
-  if (status) status.textContent = 'Caricamento…';
-  try {
-    const fd = new FormData(); fd.append('file', file);
-    const res = await fetch('/api/upload', { method: 'POST', body: fd });
-    const data = await res.json();
-    varReadyClip = { filename: file.name, url: data.url };
-    send({ type: 'VAR_LOAD', url: data.url, filename: file.name });
-    varAdminZoom = 1;
-    if (status) status.textContent = '✓ ' + file.name;
-  } catch(e) {
-    if (status) status.textContent = '✗ Errore caricamento';
-  }
-  input.value = '';
-}
-
-async function varSaveWatchPath() {
-  const input  = document.getElementById('varWatchPathInput');
-  const status = document.getElementById('varWatchPathStatus');
-  const watchPath = input?.value?.trim();
-  if (!watchPath) return;
-  if (status) status.textContent = 'Salvataggio…';
-  try {
-    const res  = await fetch('/api/var-watch-path', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ watchPath })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      if (status) { status.textContent = '✓ Cartella impostata'; status.style.color = '#00C56E'; }
-    } else {
-      if (status) { status.textContent = '✗ ' + (data.error || 'Errore'); status.style.color = '#E51B1B'; }
-    }
-  } catch(e) {
-    if (status) { status.textContent = '✗ Errore di rete'; status.style.color = '#E51B1B'; }
-  }
-}
-
-async function varLoadCurrentPath() {
-  try {
-    const res  = await fetch('/api/var-watch-path');
-    const data = await res.json();
-    const input = document.getElementById('varWatchPathInput');
-    if (input && data.watchPath) input.value = data.watchPath;
-  } catch(e) {}
-}
-
-document.addEventListener('DOMContentLoaded', varLoadCurrentPath);
-
-function varAdminTogglePlay() {
-  if (varAdminPlaying) {
-    send({ type: 'VAR_CONTROL', ctrl: 'pause' });
-  } else {
-    send({ type: 'VAR_CONTROL', ctrl: 'play' });
-  }
-}
-
-function varCtrl(ctrl, value) {
-  send({ type: 'VAR_CONTROL', ctrl, value });
-}
-
-function varAdminClose() {
-  send({ type: 'VAR_CLOSE' });
-}
-
-function varUpdatePlayBtn() {
-  const btn = document.getElementById('varPlayPauseBtn');
-  if (!btn) return;
-  btn.textContent = varAdminPlaying ? '⏸' : '▶';
-  btn.classList.toggle('paused', !varAdminPlaying);
-}
-
-function varHighlightSpeed(val) {
-  document.querySelectorAll('.var-speed-btn').forEach(b => b.classList.remove('active'));
-  const map = { 0.25: 0, 0.5: 1, 1: 2, 1.5: 3, 2: 4 };
-  const idx = map[val];
-  if (idx !== undefined) {
-    const btns = document.querySelectorAll('.var-speed-btn');
-    if (btns[idx]) btns[idx].classList.add('active');
-  }
-}
 
 function timerSetValue() {
   const val = document.getElementById('timerSetInput').value;
@@ -327,10 +186,10 @@ function renderVar() {
     return;
   }
 
-  const btnA = `<button class="disc-btn${v.usedA ? ' disabled' : ''}" style="${v.usedA ? 'opacity:.35;pointer-events:none;' : ''}" onclick="callVar('a')">
+  const btnA = `<button class="disc-btn" onclick="callVar('a')">
     🔍 VAR<br><small>${na}</small>${v.usedA ? ' ✓' : ''}
   </button>`;
-  const btnB = `<button class="disc-btn${v.usedB ? ' disabled' : ''}" style="${v.usedB ? 'opacity:.35;pointer-events:none;' : ''}" onclick="callVar('b')">
+  const btnB = `<button class="disc-btn" onclick="callVar('b')">
     🔍 VAR<br><small>${nb}</small>${v.usedB ? ' ✓' : ''}
   </button>`;
   sec.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">${btnA}${btnB}</div>`;

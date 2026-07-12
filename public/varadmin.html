@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>StorkLeague — Pannello VAR</title>
+<link rel="stylesheet" href="/css/admin.css">
+<style>
+  body { padding-bottom: 24px; }
+
+  .va-wrap { max-width: 720px; margin: 0 auto; padding: 0 12px; }
+
+  /* ── STAGE (video grande, trascinabile) ────────────────────── */
+  .va-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #000;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.1);
+    touch-action: none;
+    margin: 12px 0;
+  }
+  .va-stage video {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    transform-origin: center center;
+    cursor: grab;
+  }
+  .va-stage.dragging video { cursor: grabbing; }
+  .va-standby {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px; color: rgba(255,255,255,.25);
+  }
+  .va-standby .icon { font-size: 42px; }
+  .va-standby .txt { font-family: 'Rajdhani',sans-serif; font-size: 13px; letter-spacing: .15em; text-transform: uppercase; }
+  .va-hint {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    font-size: 10px; letter-spacing: .1em; color: rgba(255,255,255,.4);
+    background: rgba(0,0,0,.5); padding: 4px 10px; border-radius: 20px;
+    pointer-events: none;
+  }
+
+  /* ── VAR call/result ─────────────────────────────────────────── */
+  .va-call-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* ── Replay controls ─────────────────────────────────────────── */
+  .var-ctrl-btn {
+    padding: 12px 4px; background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12); border-radius: 8px;
+    color: #fff; font-family: 'Rajdhani', sans-serif;
+    font-size: 15px; font-weight: 700; letter-spacing: .05em;
+    cursor: pointer; text-align: center; line-height: 1.1;
+    transition: background .15s;
+  }
+  .var-ctrl-btn span { font-size: 10px; opacity: .55; display: block; }
+  .var-ctrl-btn:active { background: rgba(255,255,255,.14); }
+  .var-play-btn { background: rgba(255,107,0,.15); border-color: rgba(255,107,0,.4); color: #FF6B00; font-size: 20px; }
+  .var-play-btn.paused { background: rgba(255,215,0,.12); border-color: rgba(255,215,0,.4); color: #FFD700; }
+  .var-speed-btn.active { background: rgba(255,107,0,.18); border-color: rgba(255,107,0,.5); color: #FF6B00; }
+
+  .va-section { margin: 14px 0; }
+  .va-section-label {
+    font-family: 'Rajdhani',sans-serif; font-size: 10px; font-weight: 700;
+    color: rgba(255,255,255,.35); letter-spacing: .15em; margin-bottom: 6px;
+  }
+</style>
+</head>
+<body>
+
+<header class="admin-header">
+  <img src="/logo.png" class="admin-logo" alt="Logo">
+  <span class="admin-header-title">🔍 PANNELLO VAR</span>
+  <a href="/admin" class="display-link-btn">⚙️ Admin</a>
+</header>
+
+<div class="conn-status">
+  <div class="conn-dot" id="connDot"></div>
+  <span id="connText">Connessione…</span>
+</div>
+
+<div class="va-wrap">
+
+  <!-- ── STAGE ────────────────────────────────────────────────── -->
+  <div class="va-stage" id="vaStage">
+    <video id="vaVideo" muted playsinline style="display:none;"></video>
+    <div class="va-standby" id="vaStandby">
+      <div class="icon">🔍</div>
+      <div class="txt">Nessuna clip caricata</div>
+    </div>
+    <div class="va-hint" id="vaHint" style="display:none;">↔ Trascina per spostare l'immagine</div>
+  </div>
+
+  <!-- ── CHIAMATA VAR ─────────────────────────────────────────── -->
+  <div class="va-section" id="vaCallSection"></div>
+
+  <!-- ── CARICAMENTO CLIP ─────────────────────────────────────── -->
+  <div class="va-section">
+    <div class="va-section-label">CARTELLA REPLAY OBS</div>
+    <div style="display:flex;gap:6px;">
+      <input id="varWatchPathInput" type="text" placeholder="Es: C:\Users\...\Videos\Replays"
+        style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:7px;padding:9px 10px;color:#fff;font-size:12px;font-family:'Rajdhani',sans-serif;min-width:0;">
+      <button onclick="varSaveWatchPath()"
+        style="padding:9px 14px;background:rgba(255,107,0,.15);border:1px solid rgba(255,107,0,.4);border-radius:7px;color:#FF6B00;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">
+        SALVA
+      </button>
+    </div>
+    <div id="varWatchPathStatus" style="font-size:10px;min-height:14px;margin-top:4px;"></div>
+  </div>
+
+  <div id="varClipNotif" style="display:none;margin:10px 0;">
+    <div style="background:rgba(255,215,0,.10);border:1px solid rgba(255,215,0,.35);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:18px;">📹</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;color:#FFD700;letter-spacing:.12em;">REPLAY OBS CARICATO</div>
+        <div id="varClipName" style="font-size:11px;color:rgba(255,215,0,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+      </div>
+    </div>
+  </div>
+
+  <label style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:12px 14px;cursor:pointer;margin:10px 0;">
+    <span style="font-size:20px;">📂</span>
+    <div style="flex:1;">
+      <div style="font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.1em;">CARICA DAL PC</div>
+      <div id="varUploadStatus" style="font-size:11px;color:rgba(255,255,255,.3);">Seleziona un video da mostrare sul VAR</div>
+    </div>
+    <input type="file" accept="video/*" style="display:none" onchange="varAdminUpload(this)">
+  </label>
+
+  <!-- ── CONTROLLI RIPRODUZIONE ───────────────────────────────── -->
+  <div id="varReplayControls" style="display:none;flex-direction:column;gap:10px;">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:6px;">
+      <button class="var-ctrl-btn" onclick="varCtrl('seek',-10)">⏮<br><span>-10s</span></button>
+      <button class="var-ctrl-btn" onclick="varCtrl('seek',-3)">◀◀<br><span>-3s</span></button>
+      <button class="var-ctrl-btn var-play-btn" id="varPlayPauseBtn" onclick="varAdminTogglePlay()">▶</button>
+      <button class="var-ctrl-btn" onclick="varCtrl('seek',3)">▶▶<br><span>+3s</span></button>
+      <button class="var-ctrl-btn" onclick="varCtrl('seek',10)">⏭<br><span>+10s</span></button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
+      <button class="var-ctrl-btn var-speed-btn" onclick="varCtrl('speed',0.25)">×¼</button>
+      <button class="var-ctrl-btn var-speed-btn" onclick="varCtrl('speed',0.5)">×½</button>
+      <button class="var-ctrl-btn var-speed-btn active" onclick="varCtrl('speed',1)">×1</button>
+      <button class="var-ctrl-btn var-speed-btn" onclick="varCtrl('speed',1.5)">×1.5</button>
+      <button class="var-ctrl-btn var-speed-btn" onclick="varCtrl('speed',2)">×2</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:6px;">
+      <button class="var-ctrl-btn" onclick="varCtrl('zoom',-0.25)">🔍−</button>
+      <button class="var-ctrl-btn" onclick="varResetView()" style="font-size:11px;">RESET VISTA</button>
+      <button class="var-ctrl-btn" onclick="varCtrl('zoom',0.25)">🔍+</button>
+    </div>
+
+    <button onclick="varAdminClose()"
+      style="width:100%;padding:12px;background:rgba(229,27,27,.12);border:1px solid rgba(229,27,27,.4);border-radius:8px;color:#E51B1B;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:.15em;cursor:pointer;">
+      ✕ CHIUDI VAR
+    </button>
+  </div>
+
+</div>
+
+<!-- ── PIN MODAL ───────────────────────────────────────────── -->
+<div id="pinModal" style="
+  display:none; position:fixed; inset:0; z-index:10000;
+  background:rgba(0,0,0,.93);
+  align-items:center; justify-content:center; flex-direction:column;
+">
+  <div style="
+    background:#141414; border:2px solid var(--orange);
+    border-radius:20px; padding:32px 28px; width:90vw; max-width:340px;
+    display:flex; flex-direction:column; align-items:center; gap:18px;
+    box-shadow:0 0 60px rgba(255,107,0,.2);
+  ">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.2em;color:var(--orange);">
+      ACCESSO ADMIN
+    </div>
+    <div style="font-size:13px;color:#888;text-align:center;">
+      Inserisci il PIN per continuare
+    </div>
+    <input id="pinInput" type="password" inputmode="numeric" maxlength="12"
+      placeholder="● ● ● ●"
+      style="
+        width:100%;box-sizing:border-box;padding:14px;text-align:center;
+        background:#1a1a1a;border:2px solid #333;border-radius:12px;
+        color:#fff;font-family:'Rajdhani',sans-serif;font-size:24px;
+        letter-spacing:.2em;outline:none;
+      "
+      onkeydown="if(event.key==='Enter')submitPin()">
+    <div id="pinError" style="color:#ff4444;font-size:13px;min-height:16px;text-align:center;"></div>
+    <button onclick="submitPin()" style="
+      width:100%;padding:14px;border-radius:12px;border:none;
+      background:var(--orange);color:#000;
+      font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;
+      letter-spacing:.1em;cursor:pointer;
+    ">ENTRA</button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  function loadVaScripts() {
+    const shared = document.createElement('script');
+    shared.src = '/js/shared.js';
+    shared.onload = () => {
+      const va = document.createElement('script');
+      va.src = '/js/varadmin.js';
+      document.body.appendChild(va);
+    };
+    document.body.appendChild(shared);
+  }
+
+  (async function() {
+    try {
+      const { required } = await fetch('/api/admin-pin-required').then(r => r.json());
+      if (!required) { loadVaScripts(); return; }
+      const saved = sessionStorage.getItem('adminToken');
+      if (saved) { window.ADMIN_TOKEN = saved; loadVaScripts(); return; }
+      const modal = document.getElementById('pinModal');
+      modal.style.display = 'flex';
+      document.getElementById('pinInput').focus();
+    } catch(e) { loadVaScripts(); }
+  })();
+
+  async function submitPin() {
+    const pin = document.getElementById('pinInput').value.trim();
+    if (!pin) return;
+    document.getElementById('pinError').textContent = '';
+    try {
+      const res = await fetch('/api/admin-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin })
+      });
+      if (res.ok) {
+        const { token } = await res.json();
+        sessionStorage.setItem('adminToken', token);
+        window.ADMIN_TOKEN = token;
+        document.getElementById('pinModal').style.display = 'none';
+        loadVaScripts();
+      } else {
+        document.getElementById('pinError').textContent = 'PIN errato. Riprova.';
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinInput').focus();
+      }
+    } catch(e) {
+      document.getElementById('pinError').textContent = 'Errore di rete.';
+    }
+  }
+</script>
+</body>
+</html>

@@ -5,6 +5,8 @@ const varWrap     = document.getElementById('varVideoWrap');
 const varStateLabel = document.getElementById('varStateLabel');
 
 let currentZoom = 1;
+let panX = 0;
+let panY = 0;
 
 function showState(text, ms) {
   varStateLabel.textContent = text;
@@ -12,11 +14,16 @@ function showState(text, ms) {
   if (ms) setTimeout(() => varStateLabel.classList.remove('visible'), ms);
 }
 
+function applyTransform() {
+  varVideo.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
+}
+
 socket.on('varLoad', data => {
   varStandby.style.display = 'none';
   varScreen.classList.remove('hidden');
   currentZoom = 1;
-  varVideo.style.transform = 'scale(1)';
+  panX = 0; panY = 0;
+  applyTransform();
   varVideo.preload = 'auto';
   varVideo.src = data.url;
   varVideo.load();
@@ -43,11 +50,17 @@ socket.on('varControl', data => {
   if (ctrl === 'zoom') {
     if (value === 0) {
       currentZoom = 1;
+      panX = 0; panY = 0;
     } else {
       currentZoom = Math.max(1, Math.min(4, currentZoom + value));
     }
-    varVideo.style.transform = `scale(${currentZoom})`;
+    applyTransform();
     if (value !== 0) showState(`ZOOM ${currentZoom.toFixed(1)}×`, 900);
+  }
+  if (ctrl === 'pan') {
+    panX += value.dx;
+    panY += value.dy;
+    applyTransform();
   }
 });
 
@@ -57,5 +70,6 @@ socket.on('varClose', () => {
   varScreen.classList.add('hidden');
   varStandby.style.display = 'flex';
   currentZoom = 1;
+  panX = 0; panY = 0;
   varStateLabel.classList.remove('visible');
 });
