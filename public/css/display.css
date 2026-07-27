@@ -166,6 +166,7 @@ header.display-header {
   align-items: center; justify-content: center;
   gap: 1.6vh; text-align: center;
   height: 100%;
+  min-width: 0; /* impedisce alla colonna di allargarsi oltre la traccia della grid e sfondare la pagina */
 }
 .team-logo-wrap { display: flex; align-items: center; justify-content: center; }
 .team-logo-img {
@@ -211,6 +212,12 @@ header.display-header {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 1.2vh; text-align: center; height: 100%; width: 100%;
+  min-width: 0; /* senza questo, il testo enorme del timer forza la colonna (e la pagina) a sfondare oltre 100vw invece di stare nella sua traccia della grid — con overflow:hidden sul body, l'eccesso viene tagliato via anziché ridimensionato */
+  /* rende .score-center un contenitore di query: font-size in cqw sotto sono
+     percentuali della LARGHEZZA REALE di questa colonna, non del viewport,
+     quindi restano sempre proporzionati indipendentemente da risoluzione,
+     aspect ratio o passaggio a schermo intero (F11) */
+  container-type: inline-size;
 }
 .golx2-badge {
   display: none; font-family: 'Anton', sans-serif;
@@ -230,20 +237,24 @@ header.display-header {
   border: 6px solid var(--black);
   border-radius: 14px;
   padding: 1vh 2.4vw;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .score-number {
-  font-family: 'Anton', sans-serif; font-size: clamp(3.5rem, 6.5vw, 15vh); line-height: .9; color: var(--black);
+  font-family: 'Anton', sans-serif; font-size: clamp(3.5rem, 11cqw, 15vh); line-height: .9; color: var(--black);
 }
 .score-number.bump { animation: scoreBump .4s ease-out; }
-.score-sep { font-family: 'Anton', sans-serif; font-size: clamp(2rem, 3.6vw, 9vh); color: var(--orange); }
+.score-sep { font-family: 'Anton', sans-serif; font-size: clamp(2rem, 6cqw, 9vh); color: var(--orange); }
 .timer-display {
   display: inline-block;
-  font-family: 'Anton', sans-serif; font-size: clamp(9rem, 13vw, 42vh); letter-spacing: 0; color: var(--black);
+  max-width: 100%;
+  font-family: 'Anton', sans-serif; font-size: clamp(6rem, 26cqw, 42vh); letter-spacing: 0; color: var(--black);
   line-height: 1;
   background: var(--white);
   border: 10px solid var(--black);
   border-radius: 24px;
   padding: 0 .18em;
+  box-sizing: border-box;
 }
 .timer-display.warning {
   background: var(--red); color: var(--white); border-color: var(--black);
