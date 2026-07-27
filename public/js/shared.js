@@ -65,6 +65,10 @@ function playPhaseStartSound() {
   notes.forEach((n, i) => setTimeout(() => playTone(n, 0.3, 'square', 0.4), i * 200));
 }
 
+function playCountdownBeep(final = false) {
+  playTone(final ? 1300 : 750, final ? 0.4 : 0.15, 'square', 0.55);
+}
+
 function playRigorePresSound() {
   // Dramatic whistle + stab chords
   playTone(1400, 0.08, 'sine', 0.35);

@@ -1,6 +1,6 @@
 node_modules/
-uploads/
 public/replays/
-teams_state.json
 var_config.json
 .claude/
+match_state.json
+nul

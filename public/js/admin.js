@@ -47,6 +47,10 @@ function playRigorePres(team)  { send({ type: 'PLAY_RIGORE_PRES', team }); unloc
 function resetRigorePres(team) { send({ type: 'RESET_RIGORE_PRES', team }); }
 function callVar(team)         { send({ type: 'VAR_CALL', team }); }
 function varResult(result)     { send({ type: 'VAR_RESULT', result, team: state?.var?.lastTeam }); }
+function previewGoalVideo(team) { send({ type: 'PREVIEW_GOAL_VIDEO', team }); unlockAudio(); }
+function startShootout(team)    { send({ type: 'SHOOTOUT_START', team }); unlockAudio(); }
+function resolveShootout(scored) { send({ type: 'SHOOTOUT_RESULT', scored }); unlockAudio(); }
+function cancelShootout()       { send({ type: 'SHOOTOUT_CANCEL' }); }
 
 function timerSetValue() {
   const val = document.getElementById('timerSetInput').value;
@@ -160,6 +164,7 @@ function renderAdmin() {
   renderTimer();
   renderGoals();
   renderVar();
+  renderShootout();
   renderCards();
   renderActiveList();
   renderTeamMgmt();
@@ -193,6 +198,36 @@ function renderVar() {
     🔍 VAR<br><small>${nb}</small>${v.usedB ? ' ✓' : ''}
   </button>`;
   sec.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">${btnA}${btnB}</div>`;
+}
+
+function renderShootout() {
+  const sec = document.getElementById('shootoutSection');
+  if (!sec) return;
+  const so = state.shootout || {};
+  const na = state.teams.a.name;
+  const nb = state.teams.b.name;
+
+  if (so.active) {
+    const teamName = so.team === 'a' ? na : nb;
+    const cancelBtn = `<button class="preset-del-btn" style="width:100%;margin-top:8px;" onclick="cancelShootout()">✕ Annulla shootout</button>`;
+    if (so.phase === 'ready') {
+      sec.innerHTML = `
+        <div style="text-align:center;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:900;color:var(--orange);letter-spacing:.15em;margin-bottom:10px;">SHOOTOUT — ${teamName}: ESITO?</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button class="disc-btn" style="background:rgba(0,197,110,.15);border-color:rgba(0,197,110,.6);color:#00C56E;" onclick="resolveShootout(true)">⚽ GOL</button>
+          <button class="disc-btn" style="background:rgba(229,27,27,.15);border-color:rgba(229,27,27,.6);color:#ff5555;" onclick="resolveShootout(false)">✗ NO GOL</button>
+        </div>${cancelBtn}`;
+    } else {
+      sec.innerHTML = `<div style="text-align:center;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:900;color:var(--orange);letter-spacing:.15em;">SHOOTOUT ${teamName} — countdown in corso…</div>${cancelBtn}`;
+    }
+    return;
+  }
+
+  sec.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <button class="disc-btn" onclick="startShootout('a')">🎯 SHOOTOUT<br><small>${na}</small></button>
+      <button class="disc-btn" onclick="startShootout('b')">🎯 SHOOTOUT<br><small>${nb}</small></button>
+    </div>`;
 }
 
 function renderPhase() {
@@ -494,6 +529,7 @@ const SOUND_DEFS = [
   { key: 'rigore',      label: '⚽ Rigore Presidenziale' },
   { key: 'phaseStart',  label: '▶ Inizio fase' },
   { key: 'phaseEnd',    label: '⏹ Fine fase' },
+  { key: 'shootoutBeep', label: '⏱ Beep countdown Shootout' },
 ];
 
 function renderCustomSounds() {
@@ -594,8 +630,10 @@ async function deleteSelectedPreset() {
 // ─── UTILS ────────────────────────────────────────────────────────────────────
 function unlockAudio() { try { getAudioCtx(); } catch(e) {} }
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.body.addEventListener('touchstart', unlockAudio, { once: true });
-  document.body.addEventListener('click',      unlockAudio, { once: true });
-  fetchPresets();
-});
+// admin.js viene iniettato dinamicamente dopo il check del PIN (vedi admin.html),
+// quindi quando questo file viene eseguito il DOMContentLoaded della pagina è già
+// scattato da tempo: un listener su quell'evento qui non partirebbe mai, lasciando
+// il selettore preset vuoto finché non si salvava un nuovo preset nella sessione.
+document.body.addEventListener('touchstart', unlockAudio, { once: true });
+document.body.addEventListener('click',      unlockAudio, { once: true });
+fetchPresets();

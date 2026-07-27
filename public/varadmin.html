@@ -10,6 +10,23 @@
 
   .va-wrap { max-width: 720px; margin: 0 auto; padding: 0 12px; }
 
+  /* ── LAYOUT AFFIANCATO (iPad / tablet orizzontale) ─────────── */
+  body.split .va-wrap {
+    max-width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 14px 18px;
+  }
+  body.split .va-col-video { flex: 1.3; position: sticky; top: 12px; }
+  body.split .va-col-controls {
+    flex: 1; min-width: 280px;
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  body.split .va-stage { margin-top: 0; }
+
   /* ── STAGE (video grande, trascinabile) ────────────────────── */
   .va-stage {
     position: relative;
@@ -73,7 +90,10 @@
 <header class="admin-header">
   <img src="/logo.png" class="admin-logo" alt="Logo">
   <span class="admin-header-title">🔍 PANNELLO VAR</span>
-  <a href="/admin" class="display-link-btn">⚙️ Admin</a>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button id="layoutToggleBtn" class="display-link-btn" onclick="toggleLayout()">📱 Affiancato</button>
+    <a href="/admin" class="display-link-btn">⚙️ Admin</a>
+  </div>
 </header>
 
 <div class="conn-status">
@@ -84,6 +104,7 @@
 <div class="va-wrap">
 
   <!-- ── STAGE ────────────────────────────────────────────────── -->
+  <div class="va-col-video">
   <div class="va-stage" id="vaStage">
     <video id="vaVideo" muted playsinline style="display:none;"></video>
     <div class="va-standby" id="vaStandby">
@@ -92,6 +113,9 @@
     </div>
     <div class="va-hint" id="vaHint" style="display:none;">↔ Trascina per spostare l'immagine</div>
   </div>
+  </div>
+
+  <div class="va-col-controls">
 
   <!-- ── CHIAMATA VAR ─────────────────────────────────────────── -->
   <div class="va-section" id="vaCallSection"></div>
@@ -160,6 +184,8 @@
     </button>
   </div>
 
+  </div>
+
 </div>
 
 <!-- ── PIN MODAL ───────────────────────────────────────────── -->
@@ -201,6 +227,22 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
+  function updateLayoutBtn(split) {
+    const btn = document.getElementById('layoutToggleBtn');
+    if (btn) btn.textContent = split ? '📱 Impilato' : '📱 Affiancato';
+  }
+  function toggleLayout() {
+    const split = !document.body.classList.contains('split');
+    document.body.classList.toggle('split', split);
+    localStorage.setItem('varadminLayout', split ? 'split' : 'stacked');
+    updateLayoutBtn(split);
+  }
+  (function() {
+    const split = localStorage.getItem('varadminLayout') === 'split';
+    document.body.classList.toggle('split', split);
+    updateLayoutBtn(split);
+  })();
+
   function loadVaScripts() {
     const shared = document.createElement('script');
     shared.src = '/js/shared.js';

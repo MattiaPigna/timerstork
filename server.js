@@ -245,7 +245,10 @@ function makeState() {
     sounds: {
       goal: null, card: null, yellowCard: null, redCard: null,
       playerAlert: null, rigore: null, phaseStart: null, phaseEnd: null,
+      shootoutBeep: null,
     },
+    // Shootout live state: phase 'countdown' (5s) then 'ready' (waiting for ref decision)
+    shootout: { active: false, team: null, phase: null },
     settings: {
       tempo1Duration:      600,
       momentoDadoDuration: 120,
@@ -286,6 +289,7 @@ function phaseDuration(phase) {
 let timerTick = null;
 let timerStartMs = null;
 let timerStartValue = 0;
+let shootoutTimeout = null;
 
 function startTimer() {
   if (timerTick) return;
@@ -416,6 +420,60 @@ function handle(action) {
         videoUrl: state.teams[team].goalVideoUrl || null,
       });
       saveMatchState();
+      break;
+    }
+
+    case 'PREVIEW_GOAL_VIDEO': {
+      const { team, playerName } = action;
+      let playerVideoUrl = null;
+      if (playerName) {
+        const player = (state.teams[team].players || []).find(p =>
+          (typeof p === 'string' ? p : p.name) === playerName
+        );
+        if (player && typeof player === 'object') playerVideoUrl = player.goalVideoUrl || null;
+      }
+      io.emit('goalEvent', {
+        team, amount: 0,
+        goals: { a: state.teams.a.goals, b: state.teams.b.goals },
+        playerName: playerName || null,
+        playerVideoUrl,
+        videoUrl: state.teams[team].goalVideoUrl || null,
+        preview: true,
+      });
+      return; // nothing changed in state, skip the trailing io.emit('state', state)
+    }
+
+    case 'SHOOTOUT_START': {
+      if (state.shootout.active) break;
+      const team = action.team;
+      state.shootout = { active: true, team, phase: 'countdown' };
+      io.emit('shootoutStart', { team });
+      clearTimeout(shootoutTimeout);
+      shootoutTimeout = setTimeout(() => {
+        if (state.shootout.active && state.shootout.team === team) {
+          state.shootout.phase = 'ready';
+          io.emit('state', state);
+        }
+      }, 5000);
+      break;
+    }
+
+    case 'SHOOTOUT_RESULT': {
+      if (!state.shootout.active) break;
+      const team   = state.shootout.team;
+      const scored = !!action.scored;
+      clearTimeout(shootoutTimeout);
+      state.shootout = { active: false, team: null, phase: null };
+      io.emit('shootoutResult', { team, scored });
+      if (scored) handle({ type: 'ADD_GOAL', team, amount: 1 });
+      break;
+    }
+
+    case 'SHOOTOUT_CANCEL': {
+      if (!state.shootout.active) break;
+      clearTimeout(shootoutTimeout);
+      state.shootout = { active: false, team: null, phase: null };
+      io.emit('shootoutCancel');
       break;
     }
 
@@ -565,22 +623,30 @@ function handle(action) {
       const { teams } = action;
       if (teams.a) state.teams.a = { ...state.teams.a, ...teams.a, players: migratePlayers(teams.a.players), disciplineCards: [], goals: 0 };
       if (teams.b) state.teams.b = { ...state.teams.b, ...teams.b, players: migratePlayers(teams.b.players), disciplineCards: [], goals: 0 };
+      saveTeamsState();
       break;
     }
 
     case 'RESET_MATCH': {
       stopTimer();
+      clearTimeout(shootoutTimeout);
       const savedDefs   = state.cardDefs;
       const savedSett   = state.settings;
       const savedRig    = state.rigorePres;
       const savedTrans  = state.transitionVideos;
       const savedSounds = state.sounds;
+      // Nome, logo, giocatori e video gol delle squadre sono dati di setup,
+      // non stato di partita: un reset azzera solo punteggio/cartellini/carte.
+      const savedTeamA  = state.teams.a;
+      const savedTeamB  = state.teams.b;
       state = makeState();
       state.cardDefs         = savedDefs;
       state.settings         = savedSett;
       state.rigorePres       = savedRig;
       state.transitionVideos = savedTrans;
       state.sounds           = savedSounds;
+      state.teams.a = { ...state.teams.a, name: savedTeamA.name, logo: savedTeamA.logo, players: savedTeamA.players, goalVideoUrl: savedTeamA.goalVideoUrl };
+      state.teams.b = { ...state.teams.b, name: savedTeamB.name, logo: savedTeamB.logo, players: savedTeamB.players, goalVideoUrl: savedTeamB.goalVideoUrl };
       try { if (fs.existsSync(matchStateFile)) fs.unlinkSync(matchStateFile); } catch(e) {}
       break;
     }

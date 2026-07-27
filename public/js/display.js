@@ -41,12 +41,16 @@ socket.on('goalEvent', data => {
   if (!state) return;
   state.teams.a.goals = data.goals.a;
   state.teams.b.goals = data.goals.b;
-  const videoToPlay = data.playerVideoUrl || data.videoUrl;
-  if (videoToPlay) {
-    playVideo(videoToPlay);
-  } else {
-    playCustomSound('goal', playGoalSound);
-    showGoalAnimation(data.team, data.goals, data.playerName);
+  // Niente video/animazione quando si toglie un gol (-1) o si azzera: solo su gol veri (amount>0)
+  // o su anteprima esplicita richiesta dall'admin (preview).
+  if (data.amount > 0 || data.preview) {
+    const videoToPlay = data.playerVideoUrl || data.videoUrl;
+    if (videoToPlay) {
+      playVideo(videoToPlay);
+    } else {
+      playCustomSound('goal', playGoalSound);
+      showGoalAnimation(data.team, data.goals, data.playerName);
+    }
   }
   renderScore();
 });
@@ -91,12 +95,85 @@ socket.on('varResult', data => {
   overlay.innerHTML = `
     <div class="var-content">
       <div class="var-icon">${isConf ? '✅' : '❌'}</div>
-      <div class="var-label" style="${isConf ? 'color:#00C56E;text-shadow:0 0 60px rgba(0,197,110,.8)' : 'color:#E51B1B;text-shadow:0 0 60px rgba(229,27,27,.8)'}">VAR</div>
+      <div class="var-label ${cls}">VAR</div>
       <div class="var-status ${cls}">${icon} ${label}</div>
     </div>`;
   clearTimeout(varResultTimeout);
   varResultTimeout = setTimeout(() => overlay.classList.remove('active'), 4000);
 });
+
+// ─── SHOOTOUT ─────────────────────────────────────────────────────────────────
+let shootoutInterval    = null;
+let shootoutSafetyTimer = null; // failsafe: se nessun esito arriva, riapre comunque il display
+
+function closeShootoutOverlay() {
+  clearInterval(shootoutInterval);
+  clearTimeout(shootoutSafetyTimer);
+  document.getElementById('shootoutOverlay').classList.remove('active');
+}
+
+socket.on('shootoutStart', data => {
+  const overlay  = document.getElementById('shootoutOverlay');
+  const teamName = getTeamName(data.team);
+  let n = 5;
+
+  const renderCount = () => {
+    overlay.innerHTML = `
+      <div class="shootout-content">
+        <div class="shootout-label">SHOOTOUT</div>
+        <div class="shootout-team">${teamName}</div>
+        <div class="shootout-count${n <= 1 ? ' final' : ''}">${n}</div>
+      </div>`;
+  };
+
+  clearInterval(shootoutInterval);
+  clearTimeout(shootoutSafetyTimer);
+  renderCount();
+  overlay.classList.add('active');
+  playCustomSound('shootoutBeep', () => playCountdownBeep(false));
+
+  shootoutInterval = setInterval(() => {
+    n--;
+    if (n > 0) {
+      renderCount();
+      playCustomSound('shootoutBeep', () => playCountdownBeep(false));
+    } else {
+      clearInterval(shootoutInterval);
+      overlay.innerHTML = `
+        <div class="shootout-content">
+          <div class="shootout-label">SHOOTOUT</div>
+          <div class="shootout-team">${teamName}</div>
+          <div class="shootout-status shootout-blink">TIRO IN CORSO…</div>
+        </div>`;
+      playCustomSound('shootoutBeep', () => playCountdownBeep(true));
+      // Se per qualsiasi motivo l'arbitro non conferma mai l'esito, non blocchiamo
+      // il display all'infinito: dopo 30s torniamo comunque al timer normale.
+      clearTimeout(shootoutSafetyTimer);
+      shootoutSafetyTimer = setTimeout(closeShootoutOverlay, 30000);
+    }
+  }, 1000);
+});
+
+socket.on('shootoutResult', data => {
+  clearInterval(shootoutInterval);
+  clearTimeout(shootoutSafetyTimer);
+  const overlay = document.getElementById('shootoutOverlay');
+  if (data.scored) {
+    // Il gol vero e proprio arriva subito dopo via 'goalEvent' (con video/animazione): chiudiamo qui.
+    overlay.classList.remove('active');
+    return;
+  }
+  const teamName = getTeamName(data.team);
+  overlay.innerHTML = `
+    <div class="shootout-content">
+      <div class="shootout-label">SHOOTOUT</div>
+      <div class="shootout-team">${teamName}</div>
+      <div class="shootout-status shootout-miss">✗ NO GOL</div>
+    </div>`;
+  setTimeout(() => overlay.classList.remove('active'), 2200);
+});
+
+socket.on('shootoutCancel', () => closeShootoutOverlay());
 
 socket.on('playerEntryAlert', data => {
   playCustomSound('playerAlert', playPlayerEntryAlert);
@@ -207,7 +284,7 @@ function setPreLogo(containerId, url) {
   if (!el) return;
   el.innerHTML = url
     ? `<img class="pre-team-logo" src="${url}" alt="">`
-    : `<div style="width:160px;height:160px;border:2px dashed #333;border-radius:50%;opacity:.3;"></div>`;
+    : `<div style="width:160px;height:160px;border:3px dashed #000;border-radius:50%;opacity:.3;"></div>`;
 }
 
 // ─── SMART CARD RENDERING ─────────────────────────────────────────────────────
@@ -347,10 +424,9 @@ function showPhaseTransition(from, to) {
   const overlay = document.getElementById('phaseTransitionOverlay');
   overlay.innerHTML = `
     <div class="phase-transition">
-      <div class="pt-glow" style="background:radial-gradient(ellipse at center, ${cfg.color}33 0%, transparent 70%)"></div>
       <div class="pt-icon${cfg.dice ? ' pt-dice' : ''}">${cfg.emoji}</div>
-      <div class="pt-title" style="color:${cfg.color}">${cfg.title}</div>
-      <div class="pt-sub"   style="color:${cfg.color}">${cfg.sub}</div>
+      <div class="pt-title">${cfg.title}</div>
+      <div class="pt-sub">${cfg.sub}</div>
     </div>
   `;
   overlay.classList.add('active');
@@ -415,7 +491,7 @@ function showGoalAnimation(team, goals, playerName) {
   const teamName = getTeamName(team);
   const logo     = state?.teams?.[team]?.logo || '';
 
-  const palette = ['var(--orange)', 'var(--orange2)', '#FF4400', '#FFD700', 'rgba(255,255,255,.85)'];
+  const palette = ['#000000', '#FFFFFF'];
   let flying = '';
   for (let i = 0; i < 18; i++) {
     const top   = (3 + Math.random() * 90).toFixed(0);
@@ -423,7 +499,7 @@ function showGoalAnimation(team, goals, playerName) {
     const spd   = (.55 + Math.random() * .6).toFixed(2);
     const delay = (Math.random() * .6).toFixed(2);
     const color = palette[Math.floor(Math.random() * palette.length)];
-    const op    = (.4 + Math.random() * .6).toFixed(2);
+    const op    = (.75 + Math.random() * .25).toFixed(2);
     flying += `<div class="gol-fly" style="top:${top}%;font-size:${fs}vh;color:${color};opacity:${op};--spd:${spd}s;--delay:${delay}s">GOL!</div>`;
   }
 

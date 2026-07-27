@@ -157,6 +157,12 @@
   </div>
 </div>
 
+<!-- ── SHOOTOUT ───────────────────────────────────────────── -->
+<div class="admin-section" data-tab="partita">
+  <div class="section-title">🎯 SHOOTOUT</div>
+  <div class="section-body" id="shootoutSection"></div>
+</div>
+
 <!-- ── ATTIVI ─────────────────────────────────────────────── -->
 <div class="admin-section" data-tab="partita">
   <div class="section-title">ATTIVI (carte + cartellini)</div>
@@ -315,11 +321,13 @@
           <div class="video-upload-box">
             <label>Video Goal A</label>
             <label class="video-upload-btn">🎬 Carica<input type="file" accept="video/*" style="display:none" onchange="uploadVideo('a',this)"></label>
+            <button class="video-upload-btn" onclick="previewGoalVideo('a')">▶ Anteprima su display</button>
             <div class="video-status" id="videoStatusA"></div>
           </div>
           <div class="video-upload-box">
             <label>Video Goal B</label>
             <label class="video-upload-btn">🎬 Carica<input type="file" accept="video/*" style="display:none" onchange="uploadVideo('b',this)"></label>
+            <button class="video-upload-btn" onclick="previewGoalVideo('b')">▶ Anteprima su display</button>
             <div class="video-status" id="videoStatusB"></div>
           </div>
         </div>
@@ -502,10 +510,10 @@
   // Carica shared.js → admin.js in sequenza dopo l'auth
   function loadAdminScripts() {
     const shared = document.createElement('script');
-    shared.src = '/js/shared.js';
+    shared.src = '/js/shared.js?v=2';
     shared.onload = () => {
       const admin = document.createElement('script');
-      admin.src = '/js/admin.js';
+      admin.src = '/js/admin.js?v=2';
       admin.onload = () => { if (window.onAdminReady) window.onAdminReady(); };
       document.body.appendChild(admin);
     };
