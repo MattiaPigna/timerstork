@@ -257,6 +257,7 @@ function makeState() {
       cardDefaultDuration: 120,
       yellowCardDuration:  120,
       redCardDuration:     240,
+      teamDisplayScale:    1, // moltiplicatore dimensione logo+nome squadra sul display
     },
     cardDefs: CARD_DEFS,
   };

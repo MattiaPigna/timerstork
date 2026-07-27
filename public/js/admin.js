@@ -48,6 +48,12 @@ function resetRigorePres(team) { send({ type: 'RESET_RIGORE_PRES', team }); }
 function callVar(team)         { send({ type: 'VAR_CALL', team }); }
 function varResult(result)     { send({ type: 'VAR_RESULT', result, team: state?.var?.lastTeam }); }
 function previewGoalVideo(team) { send({ type: 'PREVIEW_GOAL_VIDEO', team }); unlockAudio(); }
+
+function adjustTeamScale(delta) {
+  const current = state?.settings?.teamDisplayScale ?? 1;
+  const next = Math.min(1.8, Math.max(0.6, +(current + delta).toFixed(2)));
+  send({ type: 'UPDATE_SETTINGS', settings: { teamDisplayScale: next } });
+}
 function startShootout(team)    { send({ type: 'SHOOTOUT_START', team }); unlockAudio(); }
 function resolveShootout(scored) { send({ type: 'SHOOTOUT_RESULT', scored }); unlockAudio(); }
 function cancelShootout()       { send({ type: 'SHOOTOUT_CANCEL' }); }
@@ -333,6 +339,9 @@ function renderTeamMgmt() {
   document.getElementById('videoStatusA').textContent       = state.teams.a.goalVideoUrl ? '✓ Video caricato' : '';
   document.getElementById('videoStatusB').textContent       = state.teams.b.goalVideoUrl ? '✓ Video caricato' : '';
   document.getElementById('rigoreVideoStatus').textContent  = state.rigorePres?.videoUrl ? '✓ Video caricato' : '';
+
+  const scaleEl = document.getElementById('teamScaleValue');
+  if (scaleEl) scaleEl.textContent = `${Math.round((state.settings?.teamDisplayScale ?? 1) * 100)}%`;
 
   renderPlayerLists();
 }

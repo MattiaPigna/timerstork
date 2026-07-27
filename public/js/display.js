@@ -213,6 +213,7 @@ function renderAll() {
   if (!state) return;
   renderPhase();
   renderTeams();
+  renderTeamScale();
   renderScore();
   renderTimer();
   renderPreMatch();
@@ -220,6 +221,12 @@ function renderAll() {
   rebuildDiscipline();
   if (state.phase === 'post') showVictoryScreen();
   else document.getElementById('victoryOverlay')?.classList.remove('active');
+}
+
+// Dimensione logo+nome squadra regolabile dal vivo dall'admin (Setup → Dimensione Logo/Nome)
+function renderTeamScale() {
+  const scale = state.settings?.teamDisplayScale || 1;
+  document.documentElement.style.setProperty('--team-scale', scale);
 }
 
 function renderPhase() {

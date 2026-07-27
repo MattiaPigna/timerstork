@@ -301,6 +301,12 @@
   <div class="admin-section" data-tab="setup">
     <div class="section-title">GESTIONE SQUADRE</div>
     <div class="section-body" style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;align-items:center;gap:10px;background:rgba(255,107,0,.06);border:1px solid rgba(255,107,0,.25);border-radius:10px;padding:10px 12px;">
+        <span style="flex:1;font-size:13px;font-weight:700;color:#ccc;">Dimensione Logo/Nome (display)</span>
+        <button class="preset-del-btn" style="width:auto;padding:6px 14px;" onclick="adjustTeamScale(-0.1)">−</button>
+        <span id="teamScaleValue" style="min-width:44px;text-align:center;font-weight:900;color:var(--orange);">100%</span>
+        <button class="preset-del-btn" style="width:auto;padding:6px 14px;color:var(--green);border-color:rgba(0,197,110,.4);background:rgba(0,197,110,.12);" onclick="adjustTeamScale(0.1)">+</button>
+      </div>
       <div class="team-mgmt-grid">
         <div class="team-mgmt-box">
           <div class="team-mgmt-label">SQUADRA A</div>
@@ -513,7 +519,7 @@
     shared.src = '/js/shared.js?v=2';
     shared.onload = () => {
       const admin = document.createElement('script');
-      admin.src = '/js/admin.js?v=2';
+      admin.src = '/js/admin.js?v=3';
       admin.onload = () => { if (window.onAdminReady) window.onAdminReady(); };
       document.body.appendChild(admin);
     };
