@@ -86,6 +86,7 @@
     <div style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:900;letter-spacing:.3em;color:var(--orange);">ADMIN QR CODE</div>
     <canvas id="qrCanvas" style="border-radius:10px;background:#fff;padding:10px;"></canvas>
     <div id="qrUrl" style="font-size:11px;color:#888;word-break:break-all;text-align:center;max-width:260px;"></div>
+    <div id="qrSessionCode" style="font-size:12px;font-weight:900;letter-spacing:.15em;color:var(--green);"></div>
     <button onclick="closeQrModal()" style="margin-top:4px;padding:10px 32px;background:rgba(255,107,0,.15);border:1px solid rgba(255,107,0,.5);border-radius:10px;color:var(--orange);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.1em;cursor:pointer;">CHIUDI</button>
   </div>
 </div>
@@ -93,6 +94,7 @@
 <div class="conn-status">
   <div class="conn-dot" id="connDot"></div>
   <span id="connText">Connessione…</span>
+  <span id="sessionCodeText" style="margin-left:6px;opacity:.6;"></span>
 </div>
 
 <!-- ══════════════════════════════════════════════════════ -->
@@ -495,10 +497,23 @@
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script>
+  // Codice sessione: stesso valore mostrato sul display, per verificare a colpo
+  // d'occhio che i due schermi parlino con lo stesso server (evita di scoprire
+  // solo a partita in corso che il telefono era su un'altra istanza/deploy).
+  let sessionInfo = null;
+  fetch('/api/session-info').then(r => r.json()).then(info => {
+    sessionInfo = info;
+    const badge = `${info.env} · ${info.code}`;
+    const t = document.getElementById('sessionCodeText');
+    if (t) t.textContent = badge;
+  }).catch(() => {});
+
   function showQrModal() {
     const url = window.location.href;
     document.getElementById('qrUrl').textContent = url;
     QRCode.toCanvas(document.getElementById('qrCanvas'), url, { width: 240, margin: 1, color: { dark: '#111', light: '#fff' } });
+    const codeEl = document.getElementById('qrSessionCode');
+    if (codeEl) codeEl.textContent = sessionInfo ? `Sessione: ${sessionInfo.env} · ${sessionInfo.code}` : '';
     document.getElementById('qrModal').style.display = 'flex';
   }
   function closeQrModal() {
@@ -546,10 +561,10 @@
       if (ra) ra.innerHTML = `RIGORE A<br><small style="font-size:12px;opacity:.7">${na}</small>`;
       if (rb) rb.innerHTML = `RIGORE B<br><small style="font-size:12px;opacity:.7">${nb}</small>`;
     });
-    socket.on('authError', () => {
+    socket.on('authError', data => {
       sessionStorage.removeItem('adminToken');
       window.ADMIN_TOKEN = null;
-      document.getElementById('pinError').textContent = 'Sessione scaduta. Reinserisci il PIN.';
+      document.getElementById('pinError').textContent = data?.message || 'Sessione scaduta. Reinserisci il PIN.';
       document.getElementById('pinModal').style.display = 'flex';
       document.getElementById('pinInput').focus();
     });

@@ -13,7 +13,18 @@ const io = new Server(httpServer);
 const PORT      = process.env.PORT || 3000;
 const DATA_DIR  = process.env.DATA_DIR || __dirname;
 const ADMIN_PIN = process.env.ADMIN_PIN || '';
-const adminTokens = new Set();
+// Solo l'ultimo login con PIN corretto resta valido: se qualcun altro (o un
+// vecchio tab/dispositivo dimenticato) effettua l'accesso, la sessione
+// precedente perde automaticamente il controllo — evita che due persone/
+// dispositivi possano comandare la partita senza accorgersene a vicenda.
+let activeAdminToken = null;
+
+// Codice generato una volta per avvio del processo: display e admin lo mostrano
+// entrambi, così basta un colpo d'occhio per essere sicuri che stiano parlando
+// con lo STESSO server (es. non uno locale e uno online per sbaglio).
+const SESSION_CODE = crypto.randomBytes(3).toString('hex').toUpperCase();
+const SESSION_ENV  = process.env.DATA_DIR ? 'ONLINE' : 'LOCALE';
+app.get('/api/session-info', (req, res) => res.json({ code: SESSION_CODE, env: SESSION_ENV }));
 
 const uploadsDir = path.join(DATA_DIR, 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
@@ -162,9 +173,8 @@ app.get('/api/admin-pin-required', (req, res) => {
 app.post('/api/admin-auth', express.json(), (req, res) => {
   if (!ADMIN_PIN) return res.json({ token: 'open' });
   if (req.body?.pin !== ADMIN_PIN) return res.status(401).json({ error: 'PIN errato' });
-  const token = crypto.randomBytes(16).toString('hex');
-  adminTokens.add(token);
-  res.json({ token });
+  activeAdminToken = crypto.randomBytes(16).toString('hex');
+  res.json({ token: activeAdminToken });
 });
 
 // ─── MATCH STATE PERSISTENCE ───────────────────────────────────────────────────
@@ -662,8 +672,8 @@ io.on('connection', socket => {
   socket.emit('state', state);
   if (state.varClip) socket.emit('varLoad', state.varClip);
   socket.on('action', action => {
-    if (ADMIN_PIN && !adminTokens.has(socket.handshake.auth?.token)) {
-      socket.emit('authError', { message: 'Token non valido' });
+    if (ADMIN_PIN && socket.handshake.auth?.token !== activeAdminToken) {
+      socket.emit('authError', { message: 'Sessione terminata: qualcun altro ha effettuato l\'accesso admin.' });
       return;
     }
     handle(action);
@@ -680,6 +690,7 @@ httpServer.listen(PORT, '0.0.0.0', () => {
 
   console.log('\n🦢  STORK LEAGUE — SERVER AVVIATO');
   console.log('════════════════════════════════════');
+  console.log(`  Codice sessione : ${SESSION_CODE}  (${SESSION_ENV})`);
   console.log(`  Display : http://localhost:${PORT}/`);
   console.log(`  Admin   : http://localhost:${PORT}/admin`);
   if (ips.length) {

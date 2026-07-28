@@ -9,6 +9,13 @@ let discSnapshotB = '';
 socket.on('connect',    () => console.log('Display connected'));
 socket.on('disconnect', () => console.log('Display disconnected'));
 
+// Codice sessione: stesso valore mostrato sull'admin, per verificare a colpo
+// d'occhio che i due schermi parlino con lo stesso server.
+fetch('/api/session-info').then(r => r.json()).then(info => {
+  const el = document.getElementById('sessionBadge');
+  if (el) el.textContent = `${info.env} · ${info.code}`;
+}).catch(() => {});
+
 socket.on('state', s => {
   state = s;
   cardSnapshot = discSnapshotA = discSnapshotB = '';

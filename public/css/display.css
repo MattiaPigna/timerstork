@@ -64,7 +64,11 @@ header.display-header {
   line-height: 1.15;
 }
 .hd-phase-sub   { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 1.7vh; letter-spacing: .18em; color: var(--black); margin-top: .5vh; text-transform: uppercase; }
-.hd-right { display: flex; align-items: center; }
+.hd-right { display: flex; align-items: center; gap: .8vw; }
+.session-badge {
+  font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 1.3vh;
+  letter-spacing: .1em; color: var(--black); opacity: .55; text-transform: uppercase;
+}
 .sound-btn { background: var(--white); border: 3px solid var(--black); color: var(--black); border-radius: 6px; padding: .5vh 1vw; font-size: 2.4vh; cursor: pointer; line-height: 1; }
 .sound-btn.active { background: var(--black); color: var(--white); border-color: var(--black); }
 
