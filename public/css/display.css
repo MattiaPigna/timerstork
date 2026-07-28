@@ -1,28 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Rajdhani:wght@700;900&display=swap');
 
 /* ── COLOR SYSTEM ────────────────────────────────────────────────────────
-   Proiezione outdoor in retroproiezione: il nero non è "spento", mostra la
-   luce ambiente riflessa dal telo e vira a grigio sporco imprevedibile.
-   Niente nero come superficie grande. Due sole tele attive: ARANCIONE
-   (sfondo generale) e BIANCO (pannelli di lettura per punteggio/timer/
-   periodo/eventi). Il nero resta solo come inchiostro/bordo sottile sopra
-   quei pannelli chiari, dove funziona benissimo. Il rosso è l'unico accento
-   di allarme (countdown, VAR ribaltato, cartellino rosso). */
+   Proiezione outdoor in retroproiezione: qualunque zona "spenta" (nero) non
+   riflette luce propria, quindi la luce delle zone accese vicine ci si
+   riversa dentro (bleed) attraverso il telo diffondente, lavando via bordi
+   e testo neri — succede anche con inchiostro nero su pannelli chiari, non
+   solo con sfondi neri interi. Niente nero, da nessuna parte: solo colori
+   attivamente proiettati. Tela di fondo arancione, pannelli in un arancione
+   più scuro e saturo (--panel), inchiostro sempre bianco (il colore più
+   acceso possibile) tranne quando il testo sta su un riquadro chiaro/giallo,
+   dove usiamo --panel come inchiostro scuro ma comunque non nero. Il rosso
+   resta l'unico accento di allarme (countdown, VAR ribaltato, cartellino
+   rosso), sempre con testo bianco sopra. */
 :root {
   --orange:      #FF6A00;
   --orange2:     #FF8A30;
+  --panel:       #B84A00;
   --white:       #FFFFFF;
-  --black:       #000000;
   --yellow-card: #FFD400;
   --red-card:    #FF1E1E;
-  --green:       #128A3E;
   --red:         #FF1E1E;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body {
   width: 100vw; height: 100vh; overflow: hidden;
-  background: var(--orange); color: var(--black);
+  background: var(--orange); color: var(--white);
   font-family: 'Rajdhani', sans-serif; font-weight: 700; user-select: none;
 }
 
@@ -44,33 +47,33 @@ html, body {
 header.display-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 1.6vw;
-  border-bottom: 6px solid var(--black);
+  border-bottom: 6px solid var(--white);
   background: var(--orange);
   position: relative; z-index: 10;
 }
 .hd-logo { display: flex; align-items: center; gap: .8vw; }
 .hd-logo img  { height: 5.5vh; }
-.hd-logo span { font-family: 'Anton', sans-serif; font-size: 2.6vh; letter-spacing: .1em; color: var(--black); }
+.hd-logo span { font-family: 'Anton', sans-serif; font-size: 2.6vh; letter-spacing: .1em; color: var(--white); }
 .hd-phase { text-align: center; }
 .hd-phase-badge {
   font-family: 'Anton', sans-serif;
   font-size: clamp(2.1rem, 4.4vw, 7vh);
   letter-spacing: .06em;
-  color: var(--black);
-  background: var(--white);
+  color: var(--white);
+  background: var(--panel);
   padding: .1em 1.2em;
-  border: 6px solid var(--black);
+  border: 6px solid var(--white);
   display: inline-block;
   line-height: 1.15;
 }
-.hd-phase-sub   { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 1.7vh; letter-spacing: .18em; color: var(--black); margin-top: .5vh; text-transform: uppercase; }
+.hd-phase-sub   { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 1.7vh; letter-spacing: .18em; color: var(--white); margin-top: .5vh; text-transform: uppercase; }
 .hd-right { display: flex; align-items: center; gap: .8vw; }
 .session-badge {
   font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 1.3vh;
-  letter-spacing: .1em; color: var(--black); opacity: .55; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--white); opacity: .65; text-transform: uppercase;
 }
-.sound-btn { background: var(--white); border: 3px solid var(--black); color: var(--black); border-radius: 6px; padding: .5vh 1vw; font-size: 2.4vh; cursor: pointer; line-height: 1; }
-.sound-btn.active { background: var(--black); color: var(--white); border-color: var(--black); }
+.sound-btn { background: var(--panel); border: 3px solid var(--white); color: var(--white); border-radius: 6px; padding: .5vh 1vw; font-size: 2.4vh; cursor: pointer; line-height: 1; }
+.sound-btn.active { background: var(--white); color: var(--panel); border-color: var(--white); }
 
 /* ── MAIN: 5-COLUMN GRID ────────────────────────────────── */
 .display-main {
@@ -94,10 +97,10 @@ header.display-header {
 
 /* ── CARTA ATTIVA PANELS (col 1 + col 5) ───────────────── */
 .carta-attiva-panel {
-  border: 6px solid var(--black);
+  border: 6px solid var(--white);
   border-radius: 10px;
-  background: var(--white);
-  color: var(--black);
+  background: var(--panel);
+  color: var(--white);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 1.2vh;
@@ -114,10 +117,10 @@ header.display-header {
 
 .panel-label {
   font-family: 'Anton', sans-serif;
-  font-size: 1.9vh; letter-spacing: .14em; color: var(--black);
+  font-size: 1.9vh; letter-spacing: .14em; color: var(--white);
   text-align: center;
   padding-bottom: .8vh;
-  border-bottom: 3px solid var(--black);
+  border-bottom: 3px solid var(--white);
   width: 100%;
 }
 .panel-card-img {
@@ -125,12 +128,12 @@ header.display-header {
 }
 .panel-timer {
   font-family: 'Anton', sans-serif;
-  font-size: 10vh; color: var(--black); letter-spacing: .02em; line-height: 1;
+  font-size: 10vh; color: var(--white); letter-spacing: .02em; line-height: 1;
 }
 .panel-timer.expired-label { color: var(--white); font-size: 4.2vh; }
-.panel-divider { width: 65%; border: none; border-top: 3px solid var(--black); margin: .3vh 0; }
-.panel-duration-label { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 1.5vh; color: var(--black); letter-spacing: .1em; text-transform: uppercase; text-align: center; }
-.panel-permanent-label { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 1.6vh; color: var(--black); letter-spacing: .1em; }
+.panel-divider { width: 65%; border: none; border-top: 3px solid var(--white); margin: .3vh 0; }
+.panel-duration-label { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 1.5vh; color: var(--white); letter-spacing: .1em; text-transform: uppercase; text-align: center; }
+.panel-permanent-label { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 1.6vh; color: var(--white); letter-spacing: .1em; }
 .panel-expired-x {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
@@ -139,14 +142,14 @@ header.display-header {
   font-size: 13vh; color: var(--white);
   animation: xAppear .3s ease;
 }
-.panel-empty { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 1.5vh; color: var(--black); letter-spacing: .18em; text-transform: uppercase; opacity: .6; }
+.panel-empty { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 1.5vh; color: var(--white); letter-spacing: .18em; text-transform: uppercase; opacity: .6; }
 
 /* ── PROGRESS BAR ───────────────────────────────────────── */
 .panel-progress-wrap {
   width: 92%;
   height: 18px;
   background: var(--orange2);
-  border: 3px solid var(--black);
+  border: 3px solid var(--white);
   border-radius: 3px;
   overflow: hidden;
   padding: 2px;
@@ -179,13 +182,13 @@ header.display-header {
 }
 .team-logo-placeholder {
   width: calc(10vw * var(--team-scale, 1)); height: calc(18vh * var(--team-scale, 1));
-  border: 3px solid var(--black);
+  border: 3px solid var(--white);
   border-radius: 8px;
   opacity: .3;
 }
 .team-name-display {
   font-family: 'Anton', sans-serif;
-  font-size: calc(clamp(1.8rem, 4vw, 6.5vh) * var(--team-scale, 1)); letter-spacing: .04em; color: var(--black);
+  font-size: calc(clamp(1.8rem, 4vw, 6.5vh) * var(--team-scale, 1)); letter-spacing: .04em; color: var(--white);
   line-height: 1.05;
 }
 .discipline-cards-list { display: flex; flex-direction: row; flex-wrap: wrap; gap: .8vw; justify-content: center; }
@@ -197,11 +200,11 @@ header.display-header {
   border-radius: .5vw;
   padding: .5vw .3vw .6vw;
   gap: .3vw;
-  border: 3px solid var(--black);
+  border: 3px solid var(--white);
   position: relative;
 }
-.discipline-badge.yellow { background: var(--yellow-card); color: #000; }
-.discipline-badge.red    { background: var(--red-card);    color: #fff; }
+.discipline-badge.yellow { background: var(--yellow-card); color: var(--panel); }
+.discipline-badge.red    { background: var(--red-card);    color: var(--white); }
 .discipline-badge .dc-player {
   font-family: 'Rajdhani', sans-serif; font-size: 1.3vh; font-weight: 900;
   letter-spacing: .02em; text-align: center; line-height: 1.1;
@@ -228,62 +231,63 @@ header.display-header {
   display: none; font-family: 'Anton', sans-serif;
   font-size: clamp(1.2rem, 2.4vw, 2.6vh); letter-spacing: .12em; color: var(--white);
   background: var(--red); padding: .3em 1.4em; border-radius: 4px;
-  border: 3px solid var(--black);
+  border: 3px solid var(--white);
   animation: pulse 1s ease-in-out infinite;
 }
 .golx2-badge.visible { display: block; }
 
-/* Punteggio e timer sono pannelli bianchi pieni con testo nero: il bianco è
-   il massimo di luce che il proiettore può emettere, quindi resta leggibile
-   in ogni condizione di luce ambiente, a differenza di un fondo nero. */
+/* Punteggio e timer sono pannelli pieni in arancione scuro con testo bianco:
+   il bianco è il massimo di luce che il proiettore può emettere, quindi
+   resta leggibile in ogni condizione — niente nero, né come sfondo né come
+   inchiostro, per evitare che il bleed di luce dalle zone accese lo lavi via. */
 .score-row {
   display: flex; align-items: center; gap: 1.4vw;
-  background: var(--white);
-  border: 6px solid var(--black);
+  background: var(--panel);
+  border: 6px solid var(--white);
   border-radius: 14px;
   padding: 1vh 2.4vw;
   max-width: 100%;
   box-sizing: border-box;
 }
 .score-number {
-  font-family: 'Anton', sans-serif; font-size: clamp(3.5rem, 11cqw, 15vh); line-height: .9; color: var(--black);
+  font-family: 'Anton', sans-serif; font-size: clamp(3.5rem, 11cqw, 15vh); line-height: .9; color: var(--white);
 }
 .score-number.bump { animation: scoreBump .4s ease-out; }
-.score-sep { font-family: 'Anton', sans-serif; font-size: clamp(2rem, 6cqw, 9vh); color: var(--orange); }
+.score-sep { font-family: 'Anton', sans-serif; font-size: clamp(2rem, 6cqw, 9vh); color: var(--white); opacity: .7; }
 .timer-display {
   display: inline-block;
   max-width: 100%;
-  font-family: 'Anton', sans-serif; font-size: clamp(6rem, 26cqw, 42vh); letter-spacing: 0; color: var(--black);
+  font-family: 'Anton', sans-serif; font-size: clamp(6rem, 26cqw, 42vh); letter-spacing: 0; color: var(--white);
   line-height: 1;
-  background: var(--white);
-  border: 10px solid var(--black);
+  background: var(--panel);
+  border: 10px solid var(--white);
   border-radius: 24px;
   padding: 0 .18em;
   box-sizing: border-box;
 }
 .timer-display.warning {
-  background: var(--red); color: var(--white); border-color: var(--black);
+  background: var(--red); color: var(--white); border-color: var(--white);
   animation: timerWarn .6s ease-in-out infinite;
 }
-.timer-label { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: clamp(1rem, 1.7vw, 2.4vh); letter-spacing: .3em; color: var(--black); text-transform: uppercase; }
+.timer-label { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: clamp(1rem, 1.7vw, 2.4vh); letter-spacing: .3em; color: var(--white); text-transform: uppercase; }
 
 /* ── FOOTER ──────────────────────────────────────────────── */
 footer.display-footer {
   display: flex; align-items: center; justify-content: center; gap: 1.5vw;
-  border-top: 3px solid var(--black);
+  border-top: 3px solid var(--white);
   background: var(--orange);
 }
 .footer-line { display: none; }
 .footer-brand { display: flex; align-items: center; gap: .6vw; }
 .footer-logo-img { height: 2.2vh; }
-.footer-brand span { font-family: 'Anton', sans-serif; font-size: 1.5vh; letter-spacing: .2em; color: var(--black); }
+.footer-brand span { font-family: 'Anton', sans-serif; font-size: 1.5vh; letter-spacing: .2em; color: var(--white); }
 
 /* ── PRE-MATCH SCREEN ────────────────────────────────────── */
 #preMatchScreen {
   position: fixed; inset: 0; z-index: 10;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  background: var(--white);
+  background: var(--panel);
   gap: 5vh;
   transition: opacity .5s ease;
 }
@@ -293,51 +297,51 @@ footer.display-footer {
   display: flex; align-items: center; gap: 1.5vw;
 }
 .pre-top-logo img  { height: 7vh; }
-.pre-top-logo span { font-family: 'Anton', sans-serif; font-size: 3.4vh; letter-spacing: .16em; color: var(--orange); }
+.pre-top-logo span { font-family: 'Anton', sans-serif; font-size: 3.4vh; letter-spacing: .16em; color: var(--white); }
 .pre-match-content { display: flex; align-items: center; gap: 6vw; }
 .pre-team { display: flex; flex-direction: column; align-items: center; gap: 3vh; }
 .pre-team-logo-wrap { width: 28vw; max-width: 340px; display: flex; align-items: center; justify-content: center; }
 .pre-team-logo { max-width: 100%; max-height: 32vh; object-fit: contain; animation: preLogoIn .6s ease both; }
 .pre-team.team-b .pre-team-logo { animation-delay: .1s; }
-.pre-team-name-pre { font-family: 'Anton', sans-serif; font-size: clamp(2.5rem, 5.5vw, 6.5vh); letter-spacing: .06em; color: var(--black); text-align: center; animation: preLogoIn .6s ease .15s both; }
+.pre-team-name-pre { font-family: 'Anton', sans-serif; font-size: clamp(2.5rem, 5.5vw, 6.5vh); letter-spacing: .06em; color: var(--white); text-align: center; animation: preLogoIn .6s ease .15s both; }
 .pre-team.team-b .pre-team-name-pre { animation-delay: .25s; }
-.pre-vs { font-family: 'Anton', sans-serif; font-size: clamp(4rem, 9vw, 14vh); line-height: 1; color: var(--orange); animation: preVsIn .6s ease .3s both; }
-.pre-subtitle { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 2.2vh; letter-spacing: .22em; color: var(--black); text-transform: uppercase; animation: preVsIn .6s ease .5s both; }
+.pre-vs { font-family: 'Anton', sans-serif; font-size: clamp(4rem, 9vw, 14vh); line-height: 1; color: var(--white); animation: preVsIn .6s ease .3s both; }
+.pre-subtitle { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 2.2vh; letter-spacing: .22em; color: var(--white); text-transform: uppercase; opacity: .8; animation: preVsIn .6s ease .5s both; }
 
 /* ── PHASE TRANSITION OVERLAY ────────────────────────────── */
 #phaseTransitionOverlay {
   transition: opacity .2s; flex-direction: column; gap: 3vh;
-  z-index: 500; background: var(--white) !important;
+  z-index: 500; background: var(--panel) !important;
 }
 .phase-transition { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.5vh; text-align: center; }
 .pt-glow { display: none; }
 .pt-icon  { font-size: 12vh; line-height: 1; animation: ptIcon .5s cubic-bezier(.17,.67,.83,.67); }
 .pt-dice  { animation: diceRoll 1.2s ease-in-out !important; }
-.pt-title { font-family: 'Anton', sans-serif; font-size: clamp(4rem, 10vw, 15vh); letter-spacing: .04em; line-height: 1; color: var(--black); animation: ptTitle .4s ease .15s both; }
-.pt-sub   { font-family: 'Anton', sans-serif; font-size: clamp(1.6rem, 3.4vw, 4vh);  letter-spacing: .2em; color: var(--orange); animation: ptTitle .4s ease .3s both; }
+.pt-title { font-family: 'Anton', sans-serif; font-size: clamp(4rem, 10vw, 15vh); letter-spacing: .04em; line-height: 1; color: var(--white); animation: ptTitle .4s ease .15s both; }
+.pt-sub   { font-family: 'Anton', sans-serif; font-size: clamp(1.6rem, 3.4vw, 4vh);  letter-spacing: .2em; color: var(--white); opacity: .8; animation: ptTitle .4s ease .3s both; }
 
 /* ── OVERLAYS (base) ─────────────────────────────────────── */
 .overlay-base {
   position: fixed; inset: 0; z-index: 100;
   display: flex; align-items: center; justify-content: center;
-  background: var(--white);
+  background: var(--panel);
   opacity: 0; pointer-events: none; transition: opacity .2s;
 }
 .overlay-base.active { opacity: 1; pointer-events: all; }
 
 /* ── CARD FLIP ANIMATION ─────────────────────────────────── */
-#cardAnimOverlay { background: var(--white); flex-direction: column; gap: 2.5vh; z-index: 200; }
+#cardAnimOverlay { background: var(--panel); flex-direction: column; gap: 2.5vh; z-index: 200; }
 .card-anim-scene { perspective: 1200px; width: 24vw; height: 42vh; }
 .card-anim-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.4,0,.2,1); }
 .card-anim-inner.flipped { transform: rotateY(180deg); }
 .card-face { position: absolute; inset: 0; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; }
 .card-face img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .card-face-front { transform: rotateY(180deg); }
-.card-anim-label { font-family: 'Anton', sans-serif; font-size: clamp(2rem, 4.5vw, 5vh); letter-spacing: .18em; color: var(--black); animation: fadeInUp .4s ease; }
-.card-team-label { font-family: 'Anton', sans-serif; font-size: clamp(1.3rem, 2.6vw, 3vh); letter-spacing: .14em; color: var(--orange); animation: fadeInUp .5s ease; }
+.card-anim-label { font-family: 'Anton', sans-serif; font-size: clamp(2rem, 4.5vw, 5vh); letter-spacing: .18em; color: var(--white); animation: fadeInUp .4s ease; }
+.card-team-label { font-family: 'Anton', sans-serif; font-size: clamp(1.3rem, 2.6vw, 3vh); letter-spacing: .14em; color: var(--white); opacity: .8; animation: fadeInUp .5s ease; }
 
 /* ── DISCIPLINE CARD ANIMATION ───────────────────────────── */
-#disciplineOverlay { background: var(--white); flex-direction: column; gap: 3vh; }
+#disciplineOverlay { background: var(--panel); flex-direction: column; gap: 3vh; }
 
 .disc-scene {
   display: flex; flex-direction: column; align-items: center; gap: 3.5vh;
@@ -347,7 +351,7 @@ footer.display-footer {
 .disc-card-shape {
   width: 18vw; height: 50vh;
   border-radius: 1.5vw;
-  border: 6px solid var(--black);
+  border: 6px solid var(--white);
   animation: discCardPop .4s cubic-bezier(.17,.67,.4,1.35) both;
 }
 .disc-card-shape.yellow { background: var(--yellow-card); }
@@ -359,11 +363,11 @@ footer.display-footer {
 }
 .disc-player-name {
   font-family: 'Anton', sans-serif; font-size: clamp(2rem, 4.5vw, 5vh); letter-spacing: .08em;
-  color: var(--black);
+  color: var(--white);
 }
 .disc-team-name {
   font-family: 'Rajdhani', sans-serif; font-size: 2.6vh; font-weight: 900;
-  letter-spacing: .14em; color: var(--black); text-transform: uppercase;
+  letter-spacing: .14em; color: var(--white); opacity: .8; text-transform: uppercase;
 }
 
 @keyframes discCardPop {
@@ -373,7 +377,7 @@ footer.display-footer {
 }
 
 /* ── GOAL ANIMATION: SCRITTE VOLANTI + ZOOM ─────────────── */
-#goalOverlay { background: var(--orange); overflow: hidden; z-index: 300; }
+#goalOverlay { background: var(--panel); overflow: hidden; z-index: 300; }
 
 .goal-fly-container {
   position: absolute; inset: 0; pointer-events: none; overflow: hidden;
@@ -393,14 +397,14 @@ footer.display-footer {
 .goal-zoom-text {
   font-family: 'Anton', sans-serif;
   font-size: 38vw; letter-spacing: -.01em; line-height: 1;
-  color: var(--black); white-space: nowrap;
+  color: var(--white); white-space: nowrap;
   animation: goalExplodeZoom 1.05s ease-in .6s both;
 }
 .goal-info-strip {
   position: absolute; bottom: 0; left: 0; right: 0; z-index: 3;
   padding: 3vh 4vw;
   background: var(--white);
-  border-top: 6px solid var(--black);
+  border-top: 6px solid var(--panel);
   display: flex; flex-direction: column; align-items: center; gap: .8vh;
   opacity: 0; animation: goalInfoIn .4s ease 1.8s both;
   pointer-events: none;
@@ -408,35 +412,35 @@ footer.display-footer {
 .goal-info-logo { height: 7vh; max-width: 10vw; object-fit: contain; }
 .goal-info-team {
   font-family: 'Anton', sans-serif; font-size: clamp(2.5rem, 5.5vw, 5.5vh); letter-spacing: .1em;
-  color: var(--black);
+  color: var(--panel);
 }
 .goal-info-player {
   font-family: 'Anton', sans-serif; font-size: clamp(1.5rem, 3.2vw, 3.2vh); letter-spacing: .12em;
-  color: var(--black);
+  color: var(--panel);
 }
 .goal-info-score {
   font-family: 'Anton', sans-serif; font-size: clamp(2.2rem, 5vw, 5vh); letter-spacing: .06em;
-  color: var(--black);
+  color: var(--panel);
 }
 
 /* Video */
-#videoOverlay { background: var(--orange); z-index: 250; }
+#videoOverlay { background: var(--panel); z-index: 250; }
 #videoOverlay video { width: 100%; height: 100%; object-fit: cover; }
 
 /* Alert */
 #alertOverlay { pointer-events: none; background: none; align-items: flex-start; padding-top: 10vh; z-index: 400; }
-.alert-box { background: var(--white); border: 6px solid var(--black); border-radius: 8px; padding: 2.5vh 5vw; text-align: center; animation: alertEntry .3s ease, alertExit .3s ease 2.6s forwards; }
-.alert-title { font-family: 'Anton', sans-serif; font-size: clamp(2.5rem, 5.5vw, 7vh); letter-spacing: .1em; color: var(--black); }
-.alert-sub   { font-family: 'Rajdhani', sans-serif; font-size: 2.8vh; font-weight: 900; color: var(--black); letter-spacing: .06em; }
+.alert-box { background: var(--white); border: 6px solid var(--panel); border-radius: 8px; padding: 2.5vh 5vw; text-align: center; animation: alertEntry .3s ease, alertExit .3s ease 2.6s forwards; }
+.alert-title { font-family: 'Anton', sans-serif; font-size: clamp(2.5rem, 5.5vw, 7vh); letter-spacing: .1em; color: var(--panel); }
+.alert-sub   { font-family: 'Rajdhani', sans-serif; font-size: 2.8vh; font-weight: 900; color: var(--panel); letter-spacing: .06em; }
 
 /* Phase end */
-#phaseEndOverlay { background: var(--white); flex-direction: column; gap: 2.5vh; }
-.phase-end-title { font-family: 'Anton', sans-serif; font-size: clamp(4rem, 9vw, 11vh); letter-spacing: .08em; color: var(--black); animation: fadeInUp .4s ease; }
-.phase-end-sub   { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 3.2vh; letter-spacing: .12em; color: var(--orange); animation: fadeInUp .5s ease; }
+#phaseEndOverlay { background: var(--panel); flex-direction: column; gap: 2.5vh; }
+.phase-end-title { font-family: 'Anton', sans-serif; font-size: clamp(4rem, 9vw, 11vh); letter-spacing: .08em; color: var(--white); animation: fadeInUp .4s ease; }
+.phase-end-sub   { font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 3.2vh; letter-spacing: .12em; color: var(--white); opacity: .8; animation: fadeInUp .5s ease; }
 
 /* Victory Screen */
 #victoryOverlay {
-  background: var(--white);
+  background: var(--panel);
   flex-direction: column; z-index: 180;
 }
 .victory-content {
@@ -446,15 +450,15 @@ footer.display-footer {
 .victory-label {
   display: inline-block;
   font-family: 'Rajdhani', sans-serif; font-size: 3.5vh; font-weight: 900;
-  letter-spacing: .4em; color: var(--black);
+  letter-spacing: .4em; color: var(--panel);
   background: var(--yellow-card);
-  border: 4px solid var(--black);
+  border: 4px solid var(--white);
   padding: .25em 1em;
   text-transform: uppercase;
 }
 .victory-draw-label {
   font-family: 'Anton', sans-serif; font-size: clamp(3.5rem, 8vw, 10vh); letter-spacing: .1em;
-  color: var(--orange);
+  color: var(--white);
 }
 .victory-logo-big {
   max-height: 26vh; max-width: 28vw; object-fit: contain;
@@ -465,22 +469,22 @@ footer.display-footer {
 }
 .victory-team-name {
   font-family: 'Anton', sans-serif; font-size: clamp(3.5rem, 8vw, 10vh); letter-spacing: .06em;
-  color: var(--black);
+  color: var(--white);
   animation: victoryName .4s ease .3s both;
 }
 .victory-score-big {
   font-family: 'Anton', sans-serif; font-size: clamp(5rem, 11vw, 16vh); letter-spacing: .02em;
-  color: var(--black); line-height: 1;
+  color: var(--white); line-height: 1;
   animation: victoryScore .4s ease .45s both;
 }
 .victory-teams-row {
   display: flex; align-items: center; gap: 1.5vw;
   font-family: 'Rajdhani', sans-serif; font-size: 2.8vh; font-weight: 900;
-  color: var(--black); letter-spacing: .06em;
+  color: var(--white); letter-spacing: .06em;
   animation: fadeInUp .5s ease .6s both;
 }
-.victory-team-sm { color: var(--black); }
-.victory-vs-sep  { color: var(--orange); }
+.victory-team-sm { color: var(--white); }
+.victory-vs-sep  { color: var(--white); opacity: .7; }
 
 @keyframes victoryEnter { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} }
 @keyframes victoryLogo  { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
@@ -491,7 +495,7 @@ footer.display-footer {
 .victory-goal-log {
   margin-top: 1.2vh;
   background: var(--white);
-  border: 3px solid var(--black);
+  border: 3px solid var(--panel);
   border-radius: 8px;
   padding: 1vh 2vw;
   min-width: 40vw; max-width: 60vw;
@@ -499,27 +503,27 @@ footer.display-footer {
 }
 .vgl-title {
   font-family: 'Rajdhani', sans-serif; font-size: 1.4vh; font-weight: 900;
-  letter-spacing: .3em; color: var(--orange);
+  letter-spacing: .3em; color: var(--panel);
   text-align: center; margin-bottom: .8vh;
 }
 .vgl-row {
   display: flex; align-items: center; gap: 1.2vw;
   padding: .5vh 0;
-  border-bottom: 2px solid var(--orange);
+  border-bottom: 2px solid var(--orange2);
   font-family: 'Rajdhani', sans-serif; font-size: 1.9vh; font-weight: 700;
 }
 .vgl-row:last-child { border-bottom: none; }
-.vgl-min    { color: var(--orange); font-family: 'Anton', sans-serif; font-size: 2vh; min-width: 4.5vw; }
-.vgl-team   { flex: 1; color: var(--black); }
-.vgl-player { color: var(--black); font-size: 1.6vh; }
-.vgl-score  { color: var(--black); font-family: 'Anton', sans-serif; font-size: 1.7vh; min-width: 4vw; text-align: right; }
+.vgl-min    { color: var(--panel); font-family: 'Anton', sans-serif; font-size: 2vh; min-width: 4.5vw; }
+.vgl-team   { flex: 1; color: var(--panel); }
+.vgl-player { color: var(--panel); font-size: 1.6vh; opacity: .7; }
+.vgl-score  { color: var(--panel); font-family: 'Anton', sans-serif; font-size: 1.7vh; min-width: 4vw; text-align: right; }
 
 /* ── VICTORY PDF BUTTON ──────────────────────────────────────── */
 .victory-pdf-btn {
   margin-top: 1.5vh;
   padding: .9vh 3vw;
   background: var(--orange);
-  border: 3px solid var(--black);
+  border: 3px solid var(--white);
   border-radius: 6px;
   color: var(--white);
   font-family: 'Rajdhani', sans-serif; font-size: 1.8vh; font-weight: 900;
@@ -528,47 +532,47 @@ footer.display-footer {
 }
 
 /* VAR */
-#varOverlay { background: var(--white); flex-direction: column; gap: 2vh; z-index: 260; }
+#varOverlay { background: var(--panel); flex-direction: column; gap: 2vh; z-index: 260; }
 .var-content { display: flex; flex-direction: column; align-items: center; gap: 2.5vh; animation: victoryEnter .4s ease; }
 .var-icon    { font-size: 10vh; animation: ptIcon .5s ease; }
 .var-label   {
   font-family: 'Anton', sans-serif; font-size: clamp(4rem, 9vw, 14vh); letter-spacing: .1em;
-  color: var(--black); line-height: 1;
+  color: var(--white); line-height: 1;
 }
-.var-team    { font-family: 'Rajdhani', sans-serif; font-size: 3.5vh; font-weight: 900; letter-spacing: .18em; color: var(--black); }
-.var-status  { font-family: 'Anton', sans-serif; font-size: clamp(2rem, 4.5vw, 5vh); letter-spacing: .18em; color: var(--black); animation: fadeInUp .3s ease; }
-.var-blink   { animation: varBlink .8s ease-in-out infinite; color: var(--orange); }
-.var-confirmed { color: var(--green); }
-.var-overturned { color: var(--red); }
+.var-team    { font-family: 'Rajdhani', sans-serif; font-size: 3.5vh; font-weight: 900; letter-spacing: .18em; color: var(--white); }
+.var-status  { font-family: 'Anton', sans-serif; font-size: clamp(2rem, 4.5vw, 5vh); letter-spacing: .18em; color: var(--white); animation: fadeInUp .3s ease; }
+.var-blink   { animation: varBlink .8s ease-in-out infinite; color: var(--white); }
+.var-confirmed  { color: var(--white); }
+.var-overturned { color: var(--white); }
 @keyframes varBlink { 0%,100%{opacity:1} 50%{opacity:.4} }
 
 /* Shootout */
-#shootoutOverlay { background: var(--white); flex-direction: column; gap: 2vh; z-index: 270; }
+#shootoutOverlay { background: var(--panel); flex-direction: column; gap: 2vh; z-index: 270; transition: background .2s, opacity .2s; }
+#shootoutOverlay.shootout-final { background: var(--red); }
 .shootout-content { display: flex; flex-direction: column; align-items: center; gap: 1.6vh; }
 .shootout-label {
   font-family: 'Anton', sans-serif; font-size: clamp(2rem, 4.6vw, 6vh); letter-spacing: .18em;
-  color: var(--orange);
+  color: var(--white); opacity: .85;
 }
 .shootout-team {
   font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 3.4vh; letter-spacing: .1em;
-  color: var(--black); text-transform: uppercase;
+  color: var(--white); text-transform: uppercase;
 }
 .shootout-count {
-  font-family: 'Anton', sans-serif; font-size: clamp(14rem, 30vw, 58vh); line-height: 1; color: var(--black);
+  font-family: 'Anton', sans-serif; font-size: clamp(14rem, 30vw, 58vh); line-height: 1; color: var(--white);
 }
-.shootout-count.final { color: var(--red); }
 .shootout-status {
-  font-family: 'Anton', sans-serif; font-size: clamp(3rem, 7vw, 9vh); letter-spacing: .1em; color: var(--black);
+  font-family: 'Anton', sans-serif; font-size: clamp(3rem, 7vw, 9vh); letter-spacing: .1em; color: var(--white);
 }
-.shootout-blink { animation: varBlink .6s ease-in-out infinite; color: var(--orange); }
-.shootout-miss  { color: var(--red); }
+.shootout-blink { animation: varBlink .6s ease-in-out infinite; color: var(--white); }
+.shootout-miss  { color: var(--white); }
 
 /* Rigore */
-#rigorePresOverlay { background: var(--white); flex-direction: column; gap: 3vh; z-index: 250; }
+#rigorePresOverlay { background: var(--panel); flex-direction: column; gap: 3vh; z-index: 250; }
 .rigore-content { display: flex; flex-direction: column; align-items: center; gap: 2vh; }
 .rigore-card-img { height: 42vh; max-width: 26vw; object-fit: contain; animation: rigoreCardEnter .6s cubic-bezier(.17,.67,.83,.67); }
-.rigore-title    { font-family: 'Anton', sans-serif; font-size: clamp(5rem, 11vw, 16vh); letter-spacing: .04em; color: var(--black); line-height: 1; animation: rigoreTextEnter .4s ease .3s both; }
-.rigore-subtitle { font-family: 'Anton', sans-serif; font-size: clamp(2.2rem, 5vw, 6.5vh); letter-spacing: .2em; color: var(--orange); animation: rigoreTextEnter .4s ease .45s both; }
+.rigore-title    { font-family: 'Anton', sans-serif; font-size: clamp(5rem, 11vw, 16vh); letter-spacing: .04em; color: var(--white); line-height: 1; animation: rigoreTextEnter .4s ease .3s both; }
+.rigore-subtitle { font-family: 'Anton', sans-serif; font-size: clamp(2.2rem, 5vw, 6.5vh); letter-spacing: .2em; color: var(--white); opacity: .85; animation: rigoreTextEnter .4s ease .45s both; }
 
 /* ── PHASE COLOR ACCENTS ─────────────────────────────────── */
 .phase-golx2 .timer-display { background: var(--red); color: var(--white); }

@@ -125,16 +125,18 @@ socket.on('shootoutStart', data => {
   let n = 5;
 
   const renderCount = () => {
+    overlay.classList.toggle('shootout-final', n <= 1);
     overlay.innerHTML = `
       <div class="shootout-content">
         <div class="shootout-label">SHOOTOUT</div>
         <div class="shootout-team">${teamName}</div>
-        <div class="shootout-count${n <= 1 ? ' final' : ''}">${n}</div>
+        <div class="shootout-count">${n}</div>
       </div>`;
   };
 
   clearInterval(shootoutInterval);
   clearTimeout(shootoutSafetyTimer);
+  overlay.classList.remove('shootout-final');
   renderCount();
   overlay.classList.add('active');
   playCustomSound('shootoutBeep', () => playCountdownBeep(false));
@@ -505,7 +507,7 @@ function showGoalAnimation(team, goals, playerName) {
   const teamName = getTeamName(team);
   const logo     = state?.teams?.[team]?.logo || '';
 
-  const palette = ['#000000', '#FFFFFF'];
+  const palette = ['#FFFFFF', '#FFD400'];
   let flying = '';
   for (let i = 0; i < 18; i++) {
     const top   = (3 + Math.random() * 90).toFixed(0);
