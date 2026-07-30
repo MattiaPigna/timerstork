@@ -208,7 +208,7 @@ function restoreMatchState() {
     if (d.activeCards)      state.activeCards = d.activeCards;
     if (d.rigorePres)       state.rigorePres = { ...state.rigorePres, ...d.rigorePres };
     if (d.var)              state.var = { ...state.var, ...d.var, active: false };
-    if (d.settings)         state.settings = { ...state.settings, ...d.settings };
+    if (d.settings)         state.settings = { ...state.settings, ...d.settings, tempo1Duration: 900, tempo2Duration: 900 };
     if (d.cardDefs)         state.cardDefs = d.cardDefs;
     if (d.transitionVideos) state.transitionVideos = { ...state.transitionVideos, ...d.transitionVideos };
     if (d.sounds)           state.sounds = { ...state.sounds, ...d.sounds };
@@ -260,9 +260,9 @@ function makeState() {
     // Shootout live state: phase 'countdown' (5s) then 'ready' (waiting for ref decision)
     shootout: { active: false, team: null, phase: null },
     settings: {
-      tempo1Duration:      600,
+      tempo1Duration:      900,
       momentoDadoDuration: 120,
-      tempo2Duration:      600,
+      tempo2Duration:      900,
       golX2Duration:       120,
       cardDefaultDuration: 120,
       yellowCardDuration:  120,
@@ -314,9 +314,9 @@ function startTimer() {
     const delta = state.timer.value - prev;
     if (delta <= 0) return;
 
-    // player-entry alerts at min 1, 2, 3
+    // player-entry alerts at min 1, 2, 3 (only during 1° tempo, for players entering the pitch)
     for (let s = prev + 1; s <= state.timer.value; s++) {
-      if (['1tempo', '2tempo'].includes(state.phase) && s <= 180 && s % 60 === 0) {
+      if (state.phase === '1tempo' && s <= 180 && s % 60 === 0) {
         io.emit('playerEntryAlert', { minute: s / 60 });
       }
     }
@@ -619,7 +619,9 @@ function handle(action) {
     }
 
     case 'UPDATE_SETTINGS': {
-      state.settings = { ...state.settings, ...action.settings };
+      // 1° e 2° tempo sono fissi a 15 minuti e non modificabili da admin
+      const { tempo1Duration, tempo2Duration, ...editableSettings } = action.settings || {};
+      state.settings = { ...state.settings, ...editableSettings };
       if (action.cardDurations) {
         action.cardDurations.forEach(({ id, duration }) => {
           const def = state.cardDefs.find(c => c.id === id);

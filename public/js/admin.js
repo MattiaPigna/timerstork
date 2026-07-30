@@ -470,9 +470,8 @@ function saveSettings() {
   const mins = id => { const v = parseFloat(document.getElementById(id)?.value); return isNaN(v) ? null : v * 60; };
   const s = state.settings;
   const settings = {
-    tempo1Duration:      mins('set_tempo1')      ?? s.tempo1Duration,
+    // 1° e 2° tempo sono fissi a 15 minuti, non modificabili
     momentoDadoDuration: mins('set_momentodado') ?? s.momentoDadoDuration,
-    tempo2Duration:      mins('set_tempo2')      ?? s.tempo2Duration,
     golX2Duration:       mins('set_golx2')       ?? s.golX2Duration,
     yellowCardDuration:  mins('set_yellow')      ?? s.yellowCardDuration,
     redCardDuration:     mins('set_red')         ?? s.redCardDuration,
