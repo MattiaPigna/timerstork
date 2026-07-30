@@ -214,35 +214,37 @@
   <div class="section-body" style="display:flex;flex-direction:column;gap:14px;">
 
     <div>
-      <div class="section-title" style="border-radius:6px;margin-bottom:8px;font-size:10px;">SQUADRA A</div>
+      <div class="section-title" style="border-radius:6px;margin-bottom:8px;font-size:10px;" id="discTitleA">SQUADRA A</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;">
         <div style="display:flex;flex-direction:column;gap:5px;">
           <label style="font-size:11px;color:#888;">Giocatore</label>
-          <select class="player-select" id="playerSelAyellow"></select>
+          <input class="player-select" id="playerSelAyellow" list="playersDatalistA" placeholder="Nome giocatore" autocomplete="off">
           <button class="disc-btn yellow" onclick="playDiscipline('a','yellow')">🟡 GIALLO</button>
         </div>
         <div style="display:flex;flex-direction:column;gap:5px;">
           <label style="font-size:11px;color:#888;">Giocatore</label>
-          <select class="player-select" id="playerSelAred"></select>
+          <input class="player-select" id="playerSelAred" list="playersDatalistA" placeholder="Nome giocatore" autocomplete="off">
           <button class="disc-btn red" onclick="playDiscipline('a','red')">🔴 ROSSO</button>
         </div>
       </div>
+      <datalist id="playersDatalistA"></datalist>
     </div>
 
     <div>
-      <div class="section-title" style="border-radius:6px;margin-bottom:8px;font-size:10px;">SQUADRA B</div>
+      <div class="section-title" style="border-radius:6px;margin-bottom:8px;font-size:10px;" id="discTitleB">SQUADRA B</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end;">
         <div style="display:flex;flex-direction:column;gap:5px;">
           <label style="font-size:11px;color:#888;">Giocatore</label>
-          <select class="player-select" id="playerSelByellow"></select>
+          <input class="player-select" id="playerSelByellow" list="playersDatalistB" placeholder="Nome giocatore" autocomplete="off">
           <button class="disc-btn yellow" onclick="playDiscipline('b','yellow')">🟡 GIALLO</button>
         </div>
         <div style="display:flex;flex-direction:column;gap:5px;">
           <label style="font-size:11px;color:#888;">Giocatore</label>
-          <select class="player-select" id="playerSelBred"></select>
+          <input class="player-select" id="playerSelBred" list="playersDatalistB" placeholder="Nome giocatore" autocomplete="off">
           <button class="disc-btn red" onclick="playDiscipline('b','red')">🔴 ROSSO</button>
         </div>
       </div>
+      <datalist id="playersDatalistB"></datalist>
     </div>
 
   </div>

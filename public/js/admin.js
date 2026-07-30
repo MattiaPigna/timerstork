@@ -368,18 +368,18 @@ function renderPlayerLists() {
 }
 
 function renderPlayerSelectors() {
-  [['a','yellow'],['a','red'],['b','yellow'],['b','red']].forEach(([team, type]) => {
-    const sel = document.getElementById(`playerSel${team.toUpperCase()}${type}`);
-    if (!sel) return;
-    const current = sel.value;
-    sel.innerHTML = '<option value="">— Generico —</option>';
+  document.getElementById('discTitleA').textContent = state.teams.a.name || 'SQUADRA A';
+  document.getElementById('discTitleB').textContent = state.teams.b.name || 'SQUADRA B';
+  ['a', 'b'].forEach(team => {
+    const list = document.getElementById(`playersDatalist${team.toUpperCase()}`);
+    if (!list) return;
+    list.innerHTML = '';
     (state.teams[team].players || []).forEach(p => {
       const name = typeof p === 'string' ? p : p.name;
       const opt = document.createElement('option');
-      opt.value = name; opt.textContent = name;
-      sel.appendChild(opt);
+      opt.value = name;
+      list.appendChild(opt);
     });
-    if ([...sel.options].some(o => o.value === current)) sel.value = current;
   });
 }
 
